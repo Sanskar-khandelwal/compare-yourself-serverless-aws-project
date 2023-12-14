@@ -5,9 +5,10 @@ import { toast } from "react-toastify"
 import Link from "next/link"
 import axios from "axios"
 import {useRouter} from "next/router"
-import {CognitoUserPool, CognitoUserAttribute} from "amazon-cognito-identity-js"
+import {CognitoUserPool, CognitoUserAttribute, CognitoUser} from "amazon-cognito-identity-js"
 
 const Apply = () => {
+
   const router = useRouter()
   const [handle, setHandle] = useState("")
   const [email, setEmail] = useState("")
@@ -15,7 +16,8 @@ const Apply = () => {
   const [category, setCategory] = useState("")
   const [submitted, setSubmitted] = React.useState(false)
   const [error, setError] = useState('')
- const  [registeredUser, setRegisteredUser] = useState("")
+   const  [registeredUser, setRegisteredUser] = useState("")
+   const [code, setCode] = useState("")
 
 
   const POOL_DATA = {
@@ -32,6 +34,7 @@ const Apply = () => {
   }
 
   const handleRegister = (e) => {
+    e.preventDefault()
     ///
     const user  = {
       email: email,
@@ -46,20 +49,35 @@ const Apply = () => {
     }
     attrList.push(new CognitoUserAttribute(emailAtribute))
     userPool.signUp(user.username, user.password, attrList, null, function(err, result){
+      
       if(err){
+        console.log(err)
         alert(err)
         return;
       }
       setRegisteredUser(result.user)
-      
+      return;
     })
+  }
 
-    ///
-    e.preventDefault()
-    if (!category){
-      toast.error("Please add a category")
+  const confirmUser  = function(handle, code){
+    console.log(handle, code)
+    const userData = {
+      Username: handle, 
+      Pool: userPool
     }
-
+    const cognitoUser = new CognitoUser(userData )
+    cognitoUser.confirmRegistration(code, true, (err, result) => {
+      if(err){
+        alert(err)
+        console.log(err)
+        return;
+      }
+      else{
+        router.push("/dashboard")
+      }
+       
+    })
   }
   return (
     <>
@@ -104,6 +122,19 @@ const Apply = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Set a Password"
               />
+              <input
+                className="px-2 py-2 bg-gray-100 border rounded-md focus:outline-none"
+                type="code"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="Enter Your code"
+              />
+               <button
+                onClick={() => confirmUser(handle, code)}
+                className="py-2 text-white bg-indigo-600 rounded-md cursor-pointer"
+              >
+                submit code
+                </button>
             
     
               <h5 className="text-lg text-left text-indigo-500">
@@ -130,6 +161,7 @@ const Apply = () => {
                 />
                 <p className="inline ml-2">Agency</p>
               </label>
+              
               </div>
              
               <input
