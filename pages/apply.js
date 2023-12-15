@@ -74,7 +74,7 @@ const Apply = () => {
         return;
       }
       else{
-        router.push("/dashboard")
+        router.push("/login")
       }
        
     })

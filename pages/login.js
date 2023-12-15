@@ -4,44 +4,45 @@ import { toast } from "react-toastify"
 import Link from "next/link"
 import axios from 'axios'
 import {useRouter} from 'next/router'
+import { AuthenticationDetails, CognitoUser, CognitoUserPool } from "amazon-cognito-identity-js"
 
 const Login = () => {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState('')
+
+  const POOL_DATA = {
+    UserPoolId: "eu-north-1_H99nvkneh",
+    ClientId: "7ndrke6s5ibtlks21d65u2mpdb"
+  }
+
+  const userPool = new CognitoUserPool(POOL_DATA)
+
+
   const handleLogin = (e) => {
     e.preventDefault()
+    const authData = {
+      Username: email,  
+      Password: password
 
-    //backend here
+    }
+    const authDetails = new AuthenticationDetails(authData)
+    const userData = {
+      Username: email, 
+      Pool: userPool
+    }
 
-    axios.post("https://socialverseserver-z24w.onrender.com/api/login",{  
-      email,
-      password,
-    },
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    } ).then((response) => {
-      const data = response.data
-      console.log(data)
-      if (data.status == "success") {
-        toast("You are Login successfully")
-        localStorage.setItem("LinkTreeToken", data.token)
-        router.push('/dashboard')
+     const cognitoUser = new CognitoUser(userData)
+     cognitoUser.authenticateUser(authDetails, {
+      onSuccess(result){
+  console.log(result)
+
+      }, 
+      onFailure(err){
+      console.log(err)    
       }
-      if(data.status == "error"){
-        toast("User not found")
-      }
-    })
-    .catch((error) => {
-      setError(error);
-      console.log(error)
-      toast.error(error.message)
-    })
-    setEmail("")
-    setPassword("")
+     })
   }
   return (
     <>
@@ -60,7 +61,7 @@ const Login = () => {
             >
               <input
                 className="w-full px-3 py-2 bg-gray-100 border rounded-md focus:outline-none"
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter Your Mail"
