@@ -8,25 +8,19 @@ import { AccountContext } from '../context/Account';
 
 
 
-const Login = () => {
- 
+const LoginForm = () => {
   const router = useRouter()
   const {authenticate} = useContext(AccountContext)
-  
-
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState('')
 
 
-
   const handleLogin = (e) => {
     e.preventDefault()
-
-   
-    authenticate(email, password).then(data => console.log("Logged In", data)).catch(err =>
-      console.log("err", console.log(err))
-    )
+    authenticate(email, password).then(data => console.log("Logged In", data)).catch(err =>{
+      console.log("err", err)
+    })
   }
   return (
     <>
@@ -83,4 +77,4 @@ const Login = () => {
   )
 }
 
-export default Login
+export default LoginForm

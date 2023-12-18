@@ -58,29 +58,7 @@ const links = () => {
     setLinks(updatedLinks)
   }
 
-  useEffect(() => {
-    
-    if (!localStorage.getItem("LinkTreeToken")) return router.push("/login")
-    axios
-      .post(
-        "https://socialverseserver-z24w.onrender.com/load/links",
-        {
-          tokenMail: localStorage.getItem("LinkTreeToken"),
-        },
-        {
-          headers: {
-            "Content-type": "application/json",
-          },
-        }
-      )
-      .then((res) => {
-        const data = res.data
-        if (data.status == "error") {
-          return toast.error(data.error)
-        }
-        setLinks(data.links)
-      })
-  }, [])
+
 
   return (
     <>

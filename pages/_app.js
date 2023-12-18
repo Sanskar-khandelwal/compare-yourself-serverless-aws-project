@@ -9,6 +9,7 @@ import { ToastContainer} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Script from 'next/script';
 import UserContext from '../context/userContext'
+import {Account} from '../context/Account'
 
 export default function App({ Component, pageProps }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +46,7 @@ export default function App({ Component, pageProps }) {
 
   return(
     <>
+    
     <NavBar/>
     <Script strategy="lazyOnload" src={`https://www.googletagmanager.com/gtag/js?id=G-WYTYXQXVK6`} />
     <Script strategy="lazyOnload">
@@ -57,13 +59,15 @@ export default function App({ Component, pageProps }) {
                     });
                 `}
     </Script>
+    <Account>
     <UserContext.Provider value = {{userData, setUserData}}>
     <Component {...pageProps} />
     </UserContext.Provider>
+    </Account>
     <ToastContainer />
     {isLoading && <div className="nprogress-custom-parent"><div className="nprogress-custom-bar"/></div>}
    
-
+  
     </>
   ) 
 }

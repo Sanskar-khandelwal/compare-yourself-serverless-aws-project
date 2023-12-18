@@ -5,6 +5,8 @@ import { toast } from "react-toastify"
 import Link from "next/link"
 import axios from "axios"
 import {useRouter} from "next/router"
+import UserPool from "../auth/UserPool"
+
 import {CognitoUserPool, CognitoUserAttribute, CognitoUser} from "amazon-cognito-identity-js"
 
 const Apply = () => {
@@ -16,16 +18,8 @@ const Apply = () => {
   const [category, setCategory] = useState("")
   const [submitted, setSubmitted] = React.useState(false)
   const [error, setError] = useState('')
-   const  [registeredUser, setRegisteredUser] = useState("")
-   const [code, setCode] = useState("")
-
-
-  const POOL_DATA = {
-    UserPoolId: "eu-north-1_H99nvkneh",
-    ClientId: "7ndrke6s5ibtlks21d65u2mpdb"
-  }
-  
-  const userPool = new CognitoUserPool(POOL_DATA)
+  const  [registeredUser, setRegisteredUser] = useState("")
+  const [code, setCode] = useState("")
 
 
   
@@ -39,20 +33,19 @@ const Apply = () => {
     const user  = {
       email: email,
       password: password,
-      username: handle,
+      username: handle, 
     }
-    console.log(user)
+   
     const attrList = []
     const emailAtribute = {
       Name: 'email',
       Value: email
     }
     attrList.push(new CognitoUserAttribute(emailAtribute))
-    userPool.signUp(user.username, user.password, attrList, null, function(err, result){
+    UserPool.signUp(user.username, user.password, attrList, null, function(err, result){
       
       if(err){
-        console.log(err)
-        alert(err)
+        console.log(err) 
         return;
       }
       setRegisteredUser(result.user)
@@ -64,7 +57,7 @@ const Apply = () => {
     console.log(handle, code)
     const userData = {
       Username: handle, 
-      Pool: userPool
+      Pool: UserPool
     }
     const cognitoUser = new CognitoUser(userData )
     cognitoUser.confirmRegistration(code, true, (err, result) => {
@@ -74,6 +67,7 @@ const Apply = () => {
         return;
       }
       else{
+        console.log(result)
         router.push("/login")
       }
        

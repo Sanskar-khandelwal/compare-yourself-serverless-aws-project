@@ -5,10 +5,14 @@ import UserHeader from "@/components/UserHeader"
 import Image from "next/image"
 import { toast } from "react-toastify"
 import axios from "axios"
+
+import { AccountContext } from "@/context/Account"
 import { useRouter } from "next/router"
 
 const profile = () => {
   const router = useRouter()
+  const { getSession } = useContext(AccountContext)
+  const session = getSession()
   const { userData, setUserData } = useContext(UserContext)
   const [socials, setSocials] = useState({
     facebook: "",
@@ -31,32 +35,43 @@ const profile = () => {
     })
   }
 
+ 
+
   function saveProfile(e) {
     e.preventDefault()
-    axios
-      .post(
-        "https://socialverseserver-z24w.onrender.com/save/profile",
-        {
-          tokenMail: localStorage.getItem("LinkTreeToken"),
-          name, 
-          bio, 
-          avatar
-        },
-        {
-          headers: {
-            "Content-type": "application/json",
-          },
-        }
-      )
-      .then((res) => {
-        const data = res.data
-        if (data.status == "error") return toast.error(data.error)
-        toast.success("Profile saved Successfully")
-      })
-      .catch((e) => {
-        console.log(e.message)
-        toast.error(e.message)
-      })
+    getSession()
+    .then((cognitoUserSession) => { 
+      const payload = {
+        "age": parseInt(name),
+        "height": parseInt(bio),
+        "income": parseInt(avatar)
+      
+   }
+      axios
+        .post(
+          "https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself",
+         payload,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": cognitoUserSession.getIdToken().getJwtToken()
+            },
+          }
+        )
+        .then((res) => {
+          const data = res.data
+          if (data.status == "error") return toast.error(data.error)
+          toast.success("Profile saved Successfully")
+        })
+        .catch((e) => {
+          console.log(e)
+          toast.error(e.message)
+        })
+    })
+    .catch((error) => {
+      // Handle any errors that occurred during the getSession method
+      console.error("Error:", error)
+    })
   }
 
   function saveSocials(e) {
@@ -85,30 +100,6 @@ const profile = () => {
       })
   }
 
-  useEffect(() => {
-    if (userData) {
-      setName(userData.name)
-      setAvatar(userData.avatar)
-      setBio(userData.bio)
-    }
-  }, [userData])
-
-  useEffect(() => {
-     if(!localStorage.getItem('LinkTreeToken')) return router.push('/login')
-     axios.post("https://socialverseserver-z24w.onrender.com/load/socials", {
-      tokenMail: localStorage.getItem('LinkTreeToken')
-     },
-     {
-      headers : {
-        "Content-type": 'application/json'
-      }
-     }).then(res => {
-      const data = res.data
-      if(data.status == 'error') {return toast.error(data.error)}
-      setSocials(data.socials)
-     })
-  }, [])
-
   return (
     <>
       <div>
@@ -120,7 +111,10 @@ const profile = () => {
                 Edit Profile
               </h4>
               <div>
-                <form onSubmit={saveProfile} className="flex flex-col items-center justify-center">
+                <form
+                  onSubmit={saveProfile}
+                  className="flex flex-col items-center justify-center"
+                >
                   <span className="flex flex-row items-center w-11/12 m-auto mb-3 bg-white border-2 shadow-md">
                     <Image
                       src="/svg/user.svg"
@@ -168,11 +162,6 @@ const profile = () => {
                       placeholder="Enter Image Link"
                       value={avatar}
                       onChange={(e) => setAvatar(e.target.value)}
-                    />
-                    <img
-                      src={avatar}
-                      className="w-12 border rounded-full shadow"
-                      alt=""
                     />
                   </span>
 
