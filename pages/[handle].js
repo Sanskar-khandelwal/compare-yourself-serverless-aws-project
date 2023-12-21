@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState,  useContext } from "react"
 import { useRouter } from "next/router"
 import { toast } from "react-toastify"
 import LinkTree from "@/components/LinkTree"
@@ -7,11 +7,18 @@ import ShareButton from "@/components/ShareButton"
 
 import axios from "axios"
 import Link from "next/link"
+import { CognitoUserSession } from "amazon-cognito-identity-js"
+import { AccountContext } from "@/context/Account"
 
 const handle = () => {
   const router = useRouter()
-  const [data, setData] = useState({})
-  const [userFound, setUserFound] = useState(false)
+  const [data, setData] = useState({
+    name: "", 
+    bio: "",
+    image: ""
+  })
+  const [userFound, setUserFound] = useState(true)
+  const { getSession, user } = useContext(AccountContext)
 
   const [social, setSocials] = useState({
     facebook: "",
@@ -21,34 +28,38 @@ const handle = () => {
     linkedin: "",
     github: "",
   })
-  useEffect(() => {
-    if (router.query?.handle) {
-      axios
-        .get(`https://socialverseserver-z24w.onrender.com/get/${router.query.handle}`)
-        .then((res) => {
-          const data = res.data
-          {
-            console.log(data)
-          }
-          if (data.status == "error") {
-            return toast.error(data.error)
-          }
-          if (data.status == "success") {
-            setData(data.userData)
-            setSocials(data.socials)
-            setUserFound(true)
-          }
-        })
-        .catch((err) => {
-          console.log(err)
-        })
-    }
-  }, [router.query])
+  // useEffect(() => {
+  //   console.log("use Effect")
+  //     getSession().then(cognitoUserSession => {
+  //       axios
+  //       .get(`https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/single`,
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           "Authorization": cognitoUserSession.getIdToken().getJwtToken()
+  //         },
+  //       })
+  //       .then((res) => {
+  //         const response = res.data
+  //         console.log(typeof response)
+  //           setData(response[0])
+  //           setSocials(response.socials)
+  //           setUserFound(true)
+  //         }
+  //       )
+  //       .catch((err) => {
+  //         console.log(err)
+  //       })
+  //     })
+
+  // }, [router])
+  
+  console.log("console statement from handle.js", user)
   if (!userFound) {
     return (
-      <div className="flex  flex-col justify-center items-center h-screen">
-        <div className="not-found px-2 ">
-          <h1 className="font-bold text-lg">User Not Found 😞</h1>
+      <div className="flex flex-col items-center justify-center h-screen">
+        <div className="px-2 not-found ">
+          <h1 className="text-lg font-bold">User Not Found 😞</h1>
 
           <p>
             If you're looking for a page, double check the spelling and try
@@ -57,7 +68,7 @@ const handle = () => {
         </div>
         Create your Own{" "}
         <Link
-          className="bg-indigo-500 px-3 ml-2 text-white hover:bg-indigo-400 transition-all duration-500 text-left"
+          className="px-3 ml-2 text-left text-white transition-all duration-500 bg-indigo-500 hover:bg-indigo-400"
           href="apply"
         >
           LinkTree
@@ -67,10 +78,10 @@ const handle = () => {
   }
   return (
     <>
-    <div className="max-w-3xl mx-auto relative">
+    <div className="relative max-w-3xl mx-auto">
       <ShareButton />
-      <LinkTree data={data} />
-      <SocialTree social={social} />
+      <LinkTree  data = {user}/>
+      {/* <SocialTree social={social} /> */}
       </div>
     </>
   )

@@ -9,8 +9,6 @@ import UserContext from "@/context/userContext"
 
 const dashboard = () => {
   const [data, setData] = useState({})
-  const { setUserData } = useContext(UserContext)
-
   return (
     <>
       <div>

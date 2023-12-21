@@ -1,4 +1,5 @@
-import React, { createContext } from "react"
+import React, { createContext, useState } from "react"
+import axios from "axios"
 import Pool from "../auth/UserPool"
 import {
   AuthenticationDetails,
@@ -9,6 +10,11 @@ import {
 export const AccountContext = createContext()
 
 export const Account = (props) => {
+  const [user, setUser] = useState(null);
+
+  const updateUser = (newUser) => {
+    setUser(newUser);
+  };
   const getSession = async()=> {
     return await new Promise((resolve, reject) => {
       const user = Pool.getCurrentUser();
@@ -27,7 +33,16 @@ export const Account = (props) => {
       }
     })
   }
-
+  const getJwtToken = async () => {
+    try {
+      const session = await getSession();
+      const jwtToken = session.getAccessToken().getJwtToken();
+      return jwtToken;
+    } catch (error) {
+      console.error("Error getting JWT token:", error);
+      throw error;
+    }
+  };
   const authenticate = async (Username, Password) => {
     console.log(Username, Password)
     return await new Promise((resolve, reject) => {
@@ -58,8 +73,10 @@ export const Account = (props) => {
       })
     })
   }
+
+  
   return (
-    <AccountContext.Provider value={{ authenticate, getSession }}>
+    <AccountContext.Provider value={{ authenticate, getSession,getJwtToken, user, updateUser }}>
       {props.children}
     </AccountContext.Provider>
   )

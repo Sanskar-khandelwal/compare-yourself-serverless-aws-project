@@ -1,30 +1,36 @@
-import React from "react"
+import React, { useContext } from "react"
 import LinkTreeCard from "../components/LinkTreeCard"
 import { AnimatePresence, motion } from "framer-motion"
 
+import {  AccountContext } from "@/context/Account"
 
-const LinkTree = ({ data }) => {
-   const { name, avatar, bio, links } = data
+
+const LinkTree = ({props}) => {
+
+ const {user} =  useContext(AccountContext)
+ const {name, image, handle, bio} = user
+  // console.log("console statement from LinkTree.js", user.name, user.handle, user.userId)
   return (
     <>
       <section>
         <div className="flex flex-col items-center mt-5">
           <img
-            className="w-20 rounded-full left-1/2 -tranlate-x-1/2 mt-2"
-            src={avatar}
+            className="w-32 h-32 mt-2 rounded-full left-1/2 -tranlate-x-1/2"
+            src={user.image ? user.image : "https://yt3.ggpht.com/a/AATXAJwNj1P3JW9IvEwMrZ9saHg_7uwe-rld2lbKrWDe=s900-c-k-c0xffffffff-no-rj-mo"}
             alt=""
           />
-          <h2 className="text-center text-lg font-bold pt-3">
+          <h2 className="pt-3 text-lg font-bold text-center">
             {name ? name : "No Username"}
           </h2>
+          <p className="text-blue-500 font-mono text-center">Add more fields in the dashboard section</p>
         </div>
   
-        <p className="text-center pb-5">{bio}</p>
+        <p className="pb-5 text-center">{bio}</p>
         
     
-        <div className="flex flex-col justify-center max-w-7xl m-auto md:my-5 w-full  mx-auto">
+        <div className="flex flex-col justify-center w-full m-auto mx-auto max-w-7xl md:my-5">
           {/* <AnimatePresence> */}
-          {links.map((link, index) => {
+          {/* { links.length > 0 && links.map((link, index) => {
             // ;<motion.div
             //   key={index}
             //   initial={{ opacity: 0 }}
@@ -41,7 +47,7 @@ const LinkTree = ({ data }) => {
               
             )
             // </motion.div>
-          })}
+          })} */}
           {/* </AnimatePresence> */}
         </div>
       </section>
