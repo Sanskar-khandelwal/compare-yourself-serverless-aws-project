@@ -77,13 +77,14 @@ const Apply = () => {
         authenticate(email, password)
           .then((data) => {
             console.log("Logged In", data) //
-            getSession()
-              .then((cognitoUserSession) => {
+            getSession().then((cognitoUserSession) => {
                 const payload = {
                   "handle": handle,
                   "name": name,
-                  "email": email,
+                  "email": email
                 }
+
+                console.log("payload for the confirmation:", payload)
                 axios
                   .post(
                     "https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself",
@@ -91,9 +92,7 @@ const Apply = () => {
                     {
                       headers: {
                         "Content-Type": "application/json",
-                        Authorization: cognitoUserSession
-                          .getIdToken()
-                          .getJwtToken(),
+                        'Authorization': cognitoUserSession.getIdToken().getJwtToken(),
                       },
                     }
                   )
@@ -102,7 +101,7 @@ const Apply = () => {
                     if (data.status === "error") {
                       return toast.error(data.error)
                     }
-                    console.log(data)
+                    console.log("confirmation data axios", data)
                     updateUser(payload)
                     router.push("/dashboard")
                     toast.success("Profile saved Successfully")

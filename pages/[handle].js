@@ -1,4 +1,4 @@
-import React, { useEffect, useState,  useContext } from "react"
+import React, { useEffect, useState, useContext } from "react"
 import { useRouter } from "next/router"
 import { toast } from "react-toastify"
 import LinkTree from "@/components/LinkTree"
@@ -13,14 +13,16 @@ import { AccountContext } from "@/context/Account"
 const handle = () => {
   const router = useRouter()
   const [data, setData] = useState({
-    name: "", 
+    name: "",
     bio: "",
-    image: ""
+    image: "",
   })
   const [userFound, setUserFound] = useState(true)
-  const { getSession, user } = useContext(AccountContext)
+  const { getSession, user, updateUser } = useContext(AccountContext)
 
-  const [social, setSocials] = useState({
+  
+
+  const [socials, setSocials] = useState({
     facebook: "",
     twitter: "",
     instagram: "",
@@ -28,32 +30,45 @@ const handle = () => {
     linkedin: "",
     github: "",
   })
-  // useEffect(() => {
-  //   console.log("use Effect")
-  //     getSession().then(cognitoUserSession => {
-  //       axios
-  //       .get(`https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/single`,
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           "Authorization": cognitoUserSession.getIdToken().getJwtToken()
-  //         },
-  //       })
-  //       .then((res) => {
-  //         const response = res.data
-  //         console.log(typeof response)
-  //           setData(response[0])
-  //           setSocials(response.socials)
-  //           setUserFound(true)
-  //         }
-  //       )
-  //       .catch((err) => {
-  //         console.log(err)
-  //       })
-  //     })
 
-  // }, [router])
-  
+  useEffect(() => {
+    getSession().then((cognitoUserSession) => {
+      axios
+        .get(
+          `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${user.handle}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: cognitoUserSession.getIdToken().getJwtToken(),
+            },
+          }
+        )
+        .then((res) => {
+          const response = res.data
+          console.log("received this response from dynamodb: ", response)
+          const socials = response[0].socials
+          const socialObj = {
+            facebook: socials.instagram.S,
+            twitter: socials.twitter.S,
+            instagram: socials.instagram.S,
+            youtube: socials.youtube.S,
+            linkedin: socials.linkedin.S,
+            github: socials.github.S,
+          }
+          console.log("This is the social obj", socialObj)
+          setSocials(socialObj)
+          setUserFound(true)
+          updateUser({
+            ...response[0],
+            socials: socialObj,
+          })
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    })
+  }, [])
+
   console.log("console statement from handle.js", user)
   if (!userFound) {
     return (
@@ -78,10 +93,11 @@ const handle = () => {
   }
   return (
     <>
-    <div className="relative max-w-3xl mx-auto">
-      <ShareButton />
-      <LinkTree  data = {user}/>
-      {/* <SocialTree social={social} /> */}
+      <div className="relative max-w-3xl mx-auto">
+        <ShareButton />
+        <LinkTree data={user} />
+        {console.log("console statement to send data in socialTree", user)}
+        <SocialTree socials={socials} />
       </div>
     </>
   )

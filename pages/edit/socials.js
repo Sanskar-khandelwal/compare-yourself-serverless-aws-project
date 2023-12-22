@@ -11,16 +11,18 @@ import { useRouter } from "next/router"
 
 const socials = () => {
   const router = useRouter()
-  const { getSession } = useContext(AccountContext)
+  const { getSession, updateUser , user} = useContext(AccountContext)
   const session = getSession()
   const { userData, setUserData } = useContext(UserContext)
   const [socials, setSocials] = useState({
-    facebook: "",
-    twitter: "",
-    instagram: "",
-    youtube: "",
-    linkedin: "",
-    github: "",
+
+    facebook: '',
+    twitter: '',
+    instagram: '',
+    youtube: '',
+    linkedin: '',
+    github: '',
+  
   })
   const [name, setName] = useState("")
   const [bio, setBio] = useState("")
@@ -31,21 +33,22 @@ const socials = () => {
   function handleSocials(e) {
     setSocials({
       ...socials,
-      [e.target.id]: e.target.value,
+      [e.target.id]: e.target.value + "",
     })
   }
 
- 
-
-  function saveProfile(e) {
+  function saveSocials(e) {
     e.preventDefault()
     getSession()
     .then((cognitoUserSession) => { 
       const payload = {
-        "name": name,
-        "bio": bio,
-        "image": avatar
-      
+        'name': user.name,
+        'bio': user.bio,
+        'image': user.image,
+        'handle': user.handle,
+        'userId': user.userId,
+        'email': user.email,
+        'socials': socials
    }
       axios
         .post(
@@ -59,7 +62,9 @@ const socials = () => {
           }
         )
         .then((res) => {
-          const data = res.data
+          const data = res
+          console.log("console statement from socials.js", data)
+          updateUser(payload)
           if (data.status == "error") return toast.error(data.error)
           toast.success("Profile saved Successfully")
         })
@@ -74,31 +79,7 @@ const socials = () => {
     })
   }
 
-  function saveSocials(e) {
-    e.preventDefault()
-    axios
-      .post(
-        "https://socialverseserver-z24w.onrender.com/save/socials",
-        {
-          tokenMail: localStorage.getItem("LinkTreeToken"),
-          socials,
-        },
-        {
-          headers: {
-            "Content-type": "application/json",
-          },
-        }
-      )
-      .then((res) => {
-        const data = res.data
-        if (data.status == "error") return toast.error(data.error)
-        toast.success("Socials saved Successfully")
-      })
-      .catch((e) => {
-        console.log(e.message)
-        toast.error(e.message)
-      })
-  }
+
 
   return (
     <>
@@ -219,7 +200,7 @@ const socials = () => {
                   </span>
                   <input
                     type="submit"
-                    value="Save Profile"
+                    value="Save Socials"
                     className="w-32 px-4 py-2 text-white bg-blue-600 border shadow-md cursor-pointer rouned-md"
                   />
                 </form>

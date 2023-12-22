@@ -27,9 +27,9 @@ const Login = () => {
            "Content-Type": "application/json",
           }
         }).then((res) => {
-          console.log("got this response",res)
+          console.log("got this response in login.js",res.data[0])
           const data = res.data;
-          console.log(data)
+          console.log("data in db code in login.js", data)
           updateUser(data[0])
           router.push('/dashboard')
         })

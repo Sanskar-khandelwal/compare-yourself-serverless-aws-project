@@ -12,29 +12,12 @@ import { useRouter } from "next/router"
 const profile = () => {
   const router = useRouter()
   const { getSession, user , updateUser} = useContext(AccountContext)
-  console.log(user)
-  const session = getSession()
-  const { userData, setUserData } = useContext(UserContext)
-  const [socials, setSocials] = useState({
-    facebook: "",
-    twitter: "",
-    instagram: "",
-    youtube: "",
-    linkedin: "",
-    github: "",
-  })
   const [name, setName] = useState(user.name)
   const [bio, setBio] = useState("")
   const [image, setImage] = useState(
     "https://cdn-icons-png.flaticon.com/128/4140/4140048.png"
   )
 
-  function handleSocials(e) {
-    setSocials({
-      ...socials,
-      [e.target.id]: e.target.value,
-    })
-  }
 
  
 
@@ -45,9 +28,13 @@ const profile = () => {
       const payload = {
         "name": name,
         "bio": bio,
-        "image": image
+        "image": image,
+        "handle": user.handle,
+        "userId": user.userId,
+        "email": user.email
       
    }
+   updateUser(payload)
       axios
         .post(
           "https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself",
@@ -60,7 +47,8 @@ const profile = () => {
           }
         )
         .then((res) => {
-          const data = res.data
+          const data = res
+          console.log("console statement from profile.js", data)
           if (data.status == "error") return toast.error(data.error)
           toast.success("Profile saved Successfully")
         })
@@ -75,31 +63,7 @@ const profile = () => {
     })
   }
 
-  function saveSocials(e) {
-    e.preventDefault()
-    axios
-      .post(
-        "https://socialverseserver-z24w.onrender.com/save/socials",
-        {
-          tokenMail: localStorage.getItem("LinkTreeToken"),
-          socials,
-        },
-        {
-          headers: {
-            "Content-type": "application/json",
-          },
-        }
-      )
-      .then((res) => {
-        const data = res.data
-        if (data.status == "error") return toast.error(data.error)
-        toast.success("Socials saved Successfully")
-      })
-      .catch((e) => {
-        console.log(e.message)
-        toast.error(e.message)
-      })
-  }
+ 
 
   return (
     <>
@@ -161,7 +125,7 @@ const profile = () => {
                       className="w-full px-3 py-2 border-2 focus:outline-none"
                       type="text"
                       placeholder="Enter Image Link"
-                      value={avatar}
+                      value={image}
                       onChange={(e) => setImage(e.target.value)}
                     />
                   </span>

@@ -1,8 +1,8 @@
 import React from "react"
 import Link from "next/link"
 
-const SocialTree = ({ social }) => {
-  const { facebook, twitter, instagram, youtube, linkedin, github } = social
+const SocialTree = (props) => {
+ const {facebook , linkedin, twitter, instagram, github, youtube} = props.socials
   return (
     <>
       <div className="social flex flex-row justify-center my-4">
