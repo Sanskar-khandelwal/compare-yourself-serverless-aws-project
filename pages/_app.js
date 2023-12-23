@@ -46,8 +46,6 @@ export default function App({ Component, pageProps }) {
 
   return(
     <>
-    
-    <NavBar/>
     <Script strategy="lazyOnload" src={`https://www.googletagmanager.com/gtag/js?id=G-WYTYXQXVK6`} />
     <Script strategy="lazyOnload">
                 {`
