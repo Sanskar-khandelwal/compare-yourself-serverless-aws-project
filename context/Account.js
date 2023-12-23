@@ -1,6 +1,7 @@
 import React, { createContext, useState } from "react"
 import axios from "axios"
 import Pool from "../auth/UserPool"
+import { useRouter } from "next/router"
 import {
   AuthenticationDetails,
   CognitoUser,
@@ -11,6 +12,7 @@ export const AccountContext = createContext()
 
 export const Account = (props) => {
   const [user, setUser] = useState(null);
+  const router = useRouter()
 
   const updateUser = (newUser) => {
     setUser(newUser);
@@ -73,10 +75,17 @@ export const Account = (props) => {
       })
     })
   }
-
+  const logout = () => {
+    const user = Pool.getCurrentUser();
+    if (user) {
+      user.signOut();
+      router.push("/login")
+      setUser(null);
+    }
+  };
   
   return (
-    <AccountContext.Provider value={{ authenticate, getSession,getJwtToken, user, updateUser }}>
+    <AccountContext.Provider value={{ authenticate, getSession,getJwtToken, user, updateUser , logout}}>
       {props.children}
     </AccountContext.Provider>
   )
