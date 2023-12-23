@@ -13,6 +13,7 @@ import {
   CognitoUserAttribute,
   CognitoUser,
 } from "amazon-cognito-identity-js"
+import NavBar from "@/components/Navbar"
 
 const Apply = () => {
   const router = useRouter()
@@ -26,6 +27,7 @@ const Apply = () => {
   const [registeredUser, setRegisteredUser] = useState("")
   const [code, setCode] = useState("")
   const { authenticate, updateUser, getSession } = useContext(AccountContext)
+  const [visible, setVisible] = useState(false)
 
   const handleCategoryChange = (e) => {
     setCategory(e.target.value)
@@ -55,7 +57,9 @@ const Apply = () => {
           console.log(err)
           return
         }
+        setVisible(true)
         setRegisteredUser(result.user)
+
         return
       }
     )
@@ -77,11 +81,12 @@ const Apply = () => {
         authenticate(email, password)
           .then((data) => {
             console.log("Logged In", data) //
-            getSession().then((cognitoUserSession) => {
+            getSession()
+              .then((cognitoUserSession) => {
                 const payload = {
-                  "handle": handle,
-                  "name": name,
-                  "email": email
+                  handle: handle,
+                  name: name,
+                  email: email,
                 }
 
                 console.log("payload for the confirmation:", payload)
@@ -92,7 +97,9 @@ const Apply = () => {
                     {
                       headers: {
                         "Content-Type": "application/json",
-                        'Authorization': cognitoUserSession.getIdToken().getJwtToken(),
+                        Authorization: cognitoUserSession
+                          .getIdToken()
+                          .getJwtToken(),
                       },
                     }
                   )
@@ -123,6 +130,7 @@ const Apply = () => {
 
   return (
     <>
+      <NavBar />
       <section className="flex flex-row h-screen overflow-hidden ">
         <div className="flex items-center w-2/5 h-full px-10 main">
           <div className="px-4 py-8 bg-white content">
@@ -139,9 +147,18 @@ const Apply = () => {
                   src="/svg/userhandle.svg"
                   width={35}
                   height={30}
-                  alt="instagram logo"
+                  alt="user handle logo for socialverse"
                   className="w-6 h-6 mx-2 text-white bg-white "
                 ></Image>
+                <input
+                  className="w-full px-3 py-2 bg-gray-100 border rounded-md focus:outline-none"
+                  type="text"
+                  value={handle}
+                  onChange={(e) => setHandle(e.target.value)}
+                  placeholder="Create UserName"
+                />
+              </span>
+              <span className="flex flex-row items-center bg-white border">
                 <input
                   className="w-full px-3 py-2 bg-gray-100 border rounded-md focus:outline-none"
                   type="text"
@@ -150,22 +167,7 @@ const Apply = () => {
                   placeholder="Write your Name"
                 />
               </span>
-              <span className="flex flex-row items-center bg-white border">
-                <Image
-                  src="/svg/userhandle.svg"
-                  width={35}
-                  height={30}
-                  alt="instagram logo"
-                  className="w-6 h-6 mx-2 text-white bg-white "
-                ></Image>
-                <input
-                  className="w-full px-3 py-2 bg-gray-100 border rounded-md focus:outline-none"
-                  type="text"
-                  value={handle}
-                  onChange={(e) => setHandle(e.target.value)}
-                  placeholder="Social Handle"
-                />
-              </span>
+
               <input
                 className="px-2 py-2 bg-gray-100 border rounded-md focus:outline-none"
                 type="email"
@@ -180,45 +182,6 @@ const Apply = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Set a Password"
               />
-              <input
-                className="px-2 py-2 bg-gray-100 border rounded-md focus:outline-none"
-                type="code"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Enter Your code"
-              />
-              <button
-                onClick={() => confirmUser(handle, code, email, password, name)}
-                className="py-2 text-white bg-indigo-600 rounded-md cursor-pointer"
-              >
-                submit code
-              </button>
-
-              <h5 className="text-lg text-left text-indigo-500">
-                Account Type:{" "}
-              </h5>
-              <div className="flex">
-                <label className="inline">
-                  <input
-                    type="checkbox"
-                    checked={category === "Creator"}
-                    onChange={handleCategoryChange}
-                    value="Creator"
-                    className="inline bg-gray-100 rounded-md "
-                  />
-                  <p className="inline ml-2">Creators</p>
-                </label>
-                <label className="inline ml-2">
-                  <input
-                    type="checkbox"
-                    checked={category === "Agency"}
-                    onChange={handleCategoryChange}
-                    value="Agency"
-                    className="inline bg-gray-100 rounded-md"
-                  />
-                  <p className="inline ml-2">Agency</p>
-                </label>
-              </div>
 
               <input
                 type="submit"
@@ -238,6 +201,26 @@ const Apply = () => {
                 </p>
               )}
             </h4>
+            {visible && (
+              <div>
+                {" "}
+                <input
+                  className="block w-full px-2 py-2 mt-4 bg-gray-100 border rounded-md focus:outline-none"
+                  type="text"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="Enter 6 digits code from Email"
+                />
+                <button
+                  onClick={() =>
+                    confirmUser(handle, code, email, password, name)
+                  }
+                  className="block w-full py-2 mt-2 text-white bg-indigo-600 rounded-md cursor-pointer"
+                >
+                  submit code
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
