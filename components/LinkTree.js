@@ -15,7 +15,7 @@ const LinkTree = (props) => {
         <div className="flex flex-col items-center mt-5">
           <img
             className="w-32 h-32 mt-2 rounded-full left-1/2 -tranlate-x-1/2"
-            src={image ? image : "https://yt3.ggpht.com/a/AATXAJwNj1P3JW9IvEwMrZ9saHg_7uwe-rld2lbKrWDe=s900-c-k-c0xffffffff-no-rj-mo"}
+            src={image ? image : ""}
             alt=""
           />
           <h2 className="pt-3 text-lg font-bold text-center">

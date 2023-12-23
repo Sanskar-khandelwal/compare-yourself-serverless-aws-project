@@ -8,6 +8,7 @@ import Link from "next/link"
 import axios from "axios"
 import { useRouter } from "next/router"
 import { AccountContext } from "../context/Account"
+import NavBar from "@/components/Navbar"
 
 const Login = () => {
   const router = useRouter()
@@ -38,6 +39,7 @@ const Login = () => {
   }
   return (
     <>
+    <NavBar/>
       <section className="flex flex-row h-screen overflow-hidden">
         <div className="flex items-center w-2/5 h-full px-10 main">
           <div className="w-full px-4 bg-white content">
