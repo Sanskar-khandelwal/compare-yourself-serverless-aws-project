@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react"
+import React, { useContext, useEffect , useState} from "react"
 import { useRouter } from "next/router"
 import Link from "next/link"
 import UserContext from "@/context/userContext"
@@ -7,10 +7,61 @@ import {toast} from 'react-toastify'
 import { AccountContext } from "@/context/Account"
 
 
-const UserHeader = () => {
-  // const {name, role, avatar, handle, links} = data;
+const UserHeader = ({user}) => {
   const router = useRouter()
-  const { user, updateUser  } = useContext(AccountContext)
+  
+  const [currentUser, setCurrentUser] = useState('')
+  useEffect(() => {
+    getSession().then((cognitoUserSession) => {
+        const handle = cognitoUserSession.idToken.payload['cognito:username'];
+        setCurrentUser(handle)
+        if(!handle){
+          router.push('/login')
+          return
+        }
+        axios
+        .get(
+          `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${handle}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        )
+        .then((res) => {
+          const response = res.data
+          console.log("received this response from dynamodb: ", response)
+          const socials = response[0].socials
+          const socialObj = {
+            facebook: socials.instagram.S,
+            twitter: socials.twitter.S,
+            instagram: socials.instagram.S,
+            youtube: socials.youtube.S,
+            linkedin: socials.linkedin.S,
+            github: socials.github.S,
+          }
+          console.log("This is the social obj", socialObj)  
+        
+          setData(response[0])
+          updateUser({
+            ...response[0],
+            socials: socialObj,
+          })
+          setCurrentUser(user)
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    }).catch(err => {
+      router.push("/login")
+    })
+}, [router.events]);
+  
+
+ 
+  const {getSession, updateUser} = useContext(AccountContext)
+ 
+
   console.log("console statement from userHeader", user)
 
   return (

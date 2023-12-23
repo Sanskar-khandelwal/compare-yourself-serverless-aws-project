@@ -12,15 +12,11 @@ import { AccountContext } from "@/context/Account"
 
 const handle = () => {
   const router = useRouter()
-  const [data, setData] = useState({
-    name: "",
-    bio: "",
-    image: "",
-  })
+  const [data, setData] = useState({})
   const [userFound, setUserFound] = useState(true)
   const { getSession, user, updateUser } = useContext(AccountContext)
-
-  
+  const handle = router.query.handle
+  console.log(handle)
 
   const [socials, setSocials] = useState({
     facebook: "",
@@ -32,42 +28,40 @@ const handle = () => {
   })
 
   useEffect(() => {
-    getSession().then((cognitoUserSession) => {
-      axios
-        .get(
-          `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${user.handle}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: cognitoUserSession.getIdToken().getJwtToken(),
-            },
-          }
-        )
-        .then((res) => {
-          const response = res.data
-          console.log("received this response from dynamodb: ", response)
-          const socials = response[0].socials
-          const socialObj = {
-            facebook: socials.instagram.S,
-            twitter: socials.twitter.S,
-            instagram: socials.instagram.S,
-            youtube: socials.youtube.S,
-            linkedin: socials.linkedin.S,
-            github: socials.github.S,
-          }
-          console.log("This is the social obj", socialObj)
-          setSocials(socialObj)
-          setUserFound(true)
-          updateUser({
-            ...response[0],
-            socials: socialObj,
-          })
+    axios
+      .get(
+        `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${handle}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      .then((res) => {
+        const response = res.data
+        console.log("received this response from dynamodb: ", response)
+        const socials = response[0].socials
+        const socialObj = {
+          facebook: socials.instagram.S,
+          twitter: socials.twitter.S,
+          instagram: socials.instagram.S,
+          youtube: socials.youtube.S,
+          linkedin: socials.linkedin.S,
+          github: socials.github.S,
+        }
+        console.log("This is the social obj", socialObj)
+        setSocials(socialObj)
+        setData(response[0])
+        setUserFound(true)
+        updateUser({
+          ...response[0],
+          socials: socialObj,
         })
-        .catch((err) => {
-          console.log(err)
-        })
-    })
-  }, [])
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  }, [router.events])
 
   console.log("console statement from handle.js", user)
   if (!userFound) {
@@ -95,8 +89,7 @@ const handle = () => {
     <>
       <div className="relative max-w-3xl mx-auto">
         <ShareButton />
-        <LinkTree data={user} />
-        {console.log("console statement to send data in socialTree", user)}
+        <LinkTree data={data} />
         <SocialTree socials={socials} />
       </div>
     </>
