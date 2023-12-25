@@ -9,6 +9,7 @@ import axios from "axios"
 import Link from "next/link"
 import { CognitoUserSession } from "amazon-cognito-identity-js"
 import { AccountContext } from "@/context/Account"
+import LinkTreeCard from "@/components/LinkTreeCard"
 
 // const handle = () => {
 //   const router = useRouter()
@@ -108,7 +109,18 @@ const handle = () => {
   const [loading, setLoading] = useState(true) // New loading state
   const { getSession, user, updateUser } = useContext(AccountContext)
   const handle = router.query.handle
+
   console.log(handle)
+  function stringToArrayOfObjects(inputString) {
+    console.log(inputString, "input in the function")
+    const pairs = inputString.slice(2, -2).split(',');
+    const arrayOfObjects = pairs.map(pair => {
+        const [url, title] = pair.split(':');
+        return { url: url.trim(), title: title.trim() };
+    });
+
+    return arrayOfObjects;
+}
 
   const [socials, setSocials] = useState({
     facebook: "",
@@ -119,6 +131,8 @@ const handle = () => {
     github: "",
   })
 
+  const [linksString, setLinksStrings] = useState("")
+  const [linksArray, setLinksArray] = useState(null)
   useEffect(() => {
     axios
       .get(
@@ -133,8 +147,10 @@ const handle = () => {
         const response = res.data
         console.log("received this response from dynamodb: ", response)
         const socials = response[0].socials
+        setLinksStrings(response[0].links.S)
+        setLinksArray(stringToArrayOfObjects(response[0].links.S))
         const socialObj = {
-          facebook: socials?.instagram.S,
+          facebook: socials?.facebook.S,
           twitter: socials?.twitter.S,
           instagram: socials?.instagram.S,
           youtube: socials?.youtube.S,
@@ -142,6 +158,7 @@ const handle = () => {
           github: socials?.github.S,
         }
         console.log("This is the social obj", socialObj)
+       
         setSocials(socialObj)
         setData(response[0])
         setUserFound(true)
@@ -235,12 +252,21 @@ const handle = () => {
     );
   }
 
+
+  console.log("the links array is", linksArray)
   return (
     <>
-      <div className="relative max-w-3xl mx-auto">
+      <div className="relative max-w-3xl mx-auto  mt-10 bg-white/95 rounded-2xl">
         <ShareButton />
         <LinkTree data={data} />
         <SocialTree socials={socials} />
+        <div className="mt-10">
+        {
+          linksArray && linksArray.map((link) => {
+            return  <LinkTreeCard data = {link}/> 
+          })
+        }
+        </div>
       </div>
     </>
   );

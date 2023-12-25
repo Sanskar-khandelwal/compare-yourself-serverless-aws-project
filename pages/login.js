@@ -12,7 +12,7 @@ import NavBar from "@/components/Navbar"
 
 const Login = () => {
   const router = useRouter()
-  const { authenticate , updateUser} = useContext(AccountContext)
+  const { authenticate , updateUser, getAuthenticatedUser, isAuthenticated} = useContext(AccountContext)
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -23,6 +23,8 @@ const Login = () => {
     authenticate(email, password)
       .then((data) => {
         console.log("Logged In", data)
+        console.log("The Authenticated User is", getAuthenticatedUser())
+        console.log("is Authenticated:", isAuthenticated())
         axios.get(`https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${email}`, {
          headers:  {
            "Content-Type": "application/json",
