@@ -17,6 +17,30 @@ export const Account = (props) => {
   const updateUser = (newUser) => {
     setUser(newUser);
   };
+
+  const getAuthenticatedUser =  ()=>{
+ 
+        const user = Pool.getCurrentUser();
+        return user;
+  }
+
+  const isAuthenticated = async () => {
+    const user =  getAuthenticatedUser();
+
+    if (!user) {
+      return false;
+    }
+
+    try {
+      const session = await getSession();
+      return session.isValid()
+    } catch (error) {
+      console.error("Error checking authentication:", error);
+      return false;
+    }
+  };
+
+
   const getSession = async()=> {
     return await new Promise((resolve, reject) => {
       const user = Pool.getCurrentUser();
@@ -26,15 +50,21 @@ export const Account = (props) => {
             reject(err)
             return;
           }
-
+         if(session.isValid()){
           resolve(session)
           return session;
+         }
+         
+          reject(err);
+          return;
         })
       }else{
         reject()
       }
     })
   }
+
+
   const getJwtToken = async () => {
     try {
       const session = await getSession();
@@ -85,7 +115,7 @@ export const Account = (props) => {
   };
   
   return (
-    <AccountContext.Provider value={{ authenticate, getSession,getJwtToken, user, updateUser , logout}}>
+    <AccountContext.Provider value={{ authenticate, getSession,getJwtToken, user, updateUser , logout, getAuthenticatedUser , isAuthenticated}}>
       {props.children}
     </AccountContext.Provider>
   )

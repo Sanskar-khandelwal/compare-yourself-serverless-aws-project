@@ -13,11 +13,15 @@
   z-index: 1;
 }
 
+.font-poppins {
+  font-family: 'Poppins', sans-serif;
+}
+
 html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
-  font-family: Montserrat, Verdana, Geneva, Tahoma, sans-serif;
+  font-family: 'Poppins', Verdana, Geneva, Tahoma, sans-serif;
 }
 
 body {
