@@ -7,7 +7,7 @@ import { toast } from "react-toastify"
 import { AccountContext } from "@/context/Account"
 import Image from "next/image"
 
-const UserHeader = () => {
+const UserHeader = (props) => {
   const router = useRouter()
   const { getSession, user, updateUser, logout } = useContext(AccountContext)
   const [isloading, setIsLoading] = useState(true)
@@ -15,6 +15,7 @@ const UserHeader = () => {
   const [currentUser, setCurrentUser] = useState("")
 
   useEffect(() => {
+    
     getSession()
       .then((cognitoUserSession) => {
         const handle = cognitoUserSession.idToken.payload["cognito:username"]
@@ -37,12 +38,12 @@ const UserHeader = () => {
             console.log("received this response from dynamodb: ", response)
             const socials = response[0].socials
             const socialObj = {
-              facebook: socials.instagram.S,
-              twitter: socials.twitter.S,
-              instagram: socials.instagram.S,
-              youtube: socials.youtube.S,
-              linkedin: socials.linkedin.S,
-              github: socials.github.S,
+              'facebook': socials?.instagram.S,
+              'twitter': socials?.twitter.S,
+              'instagram': socials?.instagram.S,
+              'youtube': socials?.youtube.S,
+              'linkedin': socials?.linkedin.S,
+              'github': socials?.github.S,
             }
             setUserFound(true)
             updateUser({
@@ -132,16 +133,16 @@ const UserHeader = () => {
         <div>
           your socialverse link is live at:{" "}
           <Link
-            href={`http://localhost:3000/${user?.handle}`}
+            href={`http://localhost:3000/${props?.handle}`}
             className="text-blue-400"
             target="_blank"
           >
             {" "}
-            {`http://localhost:3000/${user?.handle}`}{" "}
+            {`http://localhost:3000/${props?.handle}`}{" "}
           </Link>{" "}
         </div>
         <div className="flex gap-2 px-2 py-1 rounded-lg cursor-pointer hover:bg-gray-200" onClick={() => setVisible((prev) => !prev)}>
-          <p>{user?.handle}</p>
+          <p>{props?.handle}</p>
           <Image
             src={"/svg/downarrow.svg"}
             width={10}
@@ -152,6 +153,12 @@ const UserHeader = () => {
       </div>
       <header className="flex flex-row items-center justify-between max-w-5xl mx-auto mt-3">
         <div className="flex flex-col md:flex-row">
+        <Link href="/dashboard">
+            <button className="inline-flex w-40 px-5 py-3 mb-3 mr-3 font-bold text-gray-600 border rounded-md md:w-auto hover:text-gray-900 hover:bg-gray-100">
+              <img src="/svg/dashboard.svg" alt="" className="w-4 h-4 mr-2" />
+              <span className="text-sm">Visit Dashboard</span>
+            </button>
+          </Link>
           <Link href="/edit/links">
             <button className="inline-flex w-40 px-5 py-3 mb-3 mr-3 font-bold text-gray-600 border rounded-md md:w-auto hover:text-gray-900 hover:bg-gray-100">
               <img src="/svg/url.svg" alt="" className="w-4 h-4 mr-2" />
@@ -168,7 +175,7 @@ const UserHeader = () => {
 
           <Link href="/edit/socials">
             <button className="inline-flex w-40 px-5 py-3 mb-3 mr-3 font-bold text-gray-600 border rounded md:w-auto hover:text-gray-900 hover:bg-gray-100">
-              <img src="/svg/profile.svg" alt="" className="w-4 h-4 mr-2" />
+              <img src="/svg/socials.svg" alt="" className="w-4 h-4 mr-2" />
               <span className="text-sm">Edit Socials</span>
             </button>
           </Link>

@@ -5,7 +5,7 @@ const SocialTree = (props) => {
  const {facebook , linkedin, twitter, instagram, github, youtube} = props.socials
   return (
     <>
-      <div className="social flex flex-row justify-center my-4">
+      <div className="social flex flex-row justify-center mt-5  mx-auto">
         <Link
           className=" rounded-full p-2 hover:bg-zinc-100 transition-all duration-500 hover:scale-110  mx-3 select-none"
           target="_blank"
