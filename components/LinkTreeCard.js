@@ -3,6 +3,7 @@ import Link from "next/link"
 import { useRouter } from "next/router"
 
 const LinkTreeCard = ({data}) => {
+  console.log(data)
   const router = useRouter()
   return (
     <>

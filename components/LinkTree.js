@@ -7,8 +7,8 @@ import {  AccountContext } from "@/context/Account"
 
 
 const LinkTree = (props) => {
-  console.log(props)
- const {name, image, handle, bio} = props.data
+  console.log(props.data[0])
+ const {name, image, handle, bio} = props.data[0]
   // console.log("console statement from LinkTree.js", user.name, user.handle, user.userId)
   return (
     <>
@@ -22,13 +22,13 @@ const LinkTree = (props) => {
 
             alt=""
           />
-          <h2 className="mt-4 px-16 w-9/12 mx-auto text-lg font-semibold text-center font-Poppins">
+          <h2 className="w-9/12 px-16 mx-auto mt-4 text-lg font-semibold text-center font-Poppins">
             {name ? name : "No Username"}
           </h2>
      
         </div>
   
-        <p className=" text-center mt-4">{bio}</p>
+        <p className="mt-4 text-center ">{bio}</p>
         
     
       </section>
