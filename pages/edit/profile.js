@@ -92,7 +92,8 @@ const profile = () => {
         "userId": user?.userId,
         "email": user?.email,
         "socials": user?.socials,
-        "links": user?.links
+        "links": user?.links,
+        "titles": user?.titles
    }
  
    console.log(cognitoUserSession.getIdToken().getJwtToken())

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react"
+import React, { useEffect, useState, useContext, cache } from "react"
 import { useRouter } from "next/router"
 import { toast } from "react-toastify"
 import LinkTree from "@/components/LinkTree"
@@ -10,266 +10,97 @@ import Link from "next/link"
 import { CognitoUserSession } from "amazon-cognito-identity-js"
 import { AccountContext } from "@/context/Account"
 import LinkTreeCard from "@/components/LinkTreeCard"
+import { GetServerSideProps } from "next"
 
-// const handle = () => {
-//   const router = useRouter()
-//   const [data, setData] = useState({})
-//   const [userFound, setUserFound] = useState(false)
-//   const { getSession, user, updateUser } = useContext(AccountContext)
-//   const handle = router.query.handle
-//   console.log(handle)
-
-//   const [socials, setSocials] = useState({
-//     facebook: "",
-//     twitter: "",
-//     instagram: "",
-//     youtube: "",
-//     linkedin: "",
-//     github: "",
-//   })
-
-//   useEffect(() => {
-//     axios
-//       .get(
-//         `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${handle}`,
-//         {
-//           headers: {
-//             "Content-Type": "application/json",
-//           },
-//         }
-//       )
-//       .then((res) => {
-//         const response = res.data
-//         console.log("received this response from dynamodb: ", response)
-//         const socials = response[0].socials
-//         const socialObj = {
-//           facebook: socials.instagram.S,
-//           twitter: socials.twitter.S,
-//           instagram: socials.instagram.S,
-//           youtube: socials.youtube.S,
-//           linkedin: socials.linkedin.S,
-//           github: socials.github.S,
-//         }
-//         console.log("This is the social obj", socialObj)
-//         setSocials(socialObj)
-//         setData(response[0])
-//         setUserFound(true)
-//         updateUser({
-//           ...response[0],
-//           socials: socialObj,
-//         })
-//       })
-//       .catch((err) => {
-//         console.log(err)
-//       })
-//   }, [])
-
-//   console.log("console statement from handle.js", user)
-//   if (!userFound) {
-//     return (
-//       <div className="flex flex-col items-center justify-center h-screen">
-//         <div className="px-2 not-found ">
-//           <h1 className="text-lg font-bold">User Not Found 😞</h1>
-
-//           <p>
-//             If you're looking for a page, double check the spelling and try
-//             again.
-//           </p>
-//         </div>
-//         Create your Own{" "}
-//         <Link
-//           className="px-3 ml-2 text-left text-white transition-all duration-500 bg-indigo-500 hover:bg-indigo-400"
-//           href="apply"
-//         >
-//           LinkTree
-//         </Link>
-//       </div>
-//     )
-//   }
-//   return (
-//     <>
-//       <div className="relative max-w-3xl mx-auto">
-//         <ShareButton />
-//         <LinkTree data={data} />
-//         <SocialTree socials={socials} />
-//       </div>
-//     </>
-//   )
-// }
-
-// export default handle
-
-
-// ... (import statements remain unchanged)
-
-const handle = () => {
-  const router = useRouter()
-  const [data, setData] = useState({})
-  const [userFound, setUserFound] = useState(false)
-  const [loading, setLoading] = useState(true) // New loading state
-  const { getSession, user, updateUser } = useContext(AccountContext)
-  const handle = router.query.handle
-
-  console.log(handle)
-  function stringToArrayOfObjects(inputString) {
-    console.log(inputString, "input in the function")
-    const pairs = inputString.slice(2, -2).split(',');
-    const arrayOfObjects = pairs.map(pair => {
-        const [url, title] = pair.split(':');
-        return { url: url.trim(), title: title.trim() };
-    });
-
-    return arrayOfObjects;
+const loadDataFromServer = async (handle) => {
+  console.log(handle, "received in function")
+  const response = await fetch(
+    `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${handle}`
+  )
+  return response.json()
 }
 
-  const [socials, setSocials] = useState({
-    facebook: "",
-    twitter: "",
-    instagram: "",
-    youtube: "",
-    linkedin: "",
-    github: "",
-  })
+export default function Handle() {
+  const [articles, setArticles] = useState([])
+  const router = useRouter()
+  const handle = router.query.handle
+  const [count, setCount] = useState(0)
+  const [data, setData] = useState({})
+  const [userFound, setUserFound] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [socials, setSocials] = useState(null)
+  const { getSession, user, updateUser } = useContext(AccountContext)
 
-  const [linksString, setLinksStrings] = useState("")
-  const [linksArray, setLinksArray] = useState(null)
+  console.log(handle, "handle in blog")
+
   useEffect(() => {
-    axios
-      .get(
-        `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${handle}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      )
-      .then((res) => {
-        const response = res.data
-        console.log("received this response from dynamodb: ", response)
-        const socials = response[0].socials
-        setLinksStrings(response[0].links.S)
-        setLinksArray(stringToArrayOfObjects(response[0].links.S))
-        const socialObj = {
-          facebook: socials?.facebook.S,
-          twitter: socials?.twitter.S,
-          instagram: socials?.instagram.S,
-          youtube: socials?.youtube.S,
-          linkedin: socials?.linkedin.S,
-          github: socials?.github.S,
-        }
-        console.log("This is the social obj", socialObj)
-       
+    setCount[(prev) => prev + 1]
+    const fetchData = async () => {
+      try {
+        const handle = router.query.handle
+        const data = await loadDataFromServer(handle)
+        console.log(data, "data in useEffect")
+        let socialObj;
+
+        console.log(typeof data[0].socials)
+        let lengthOfSocialObject = Object.keys(data[0].socials).length;
+    
+        if(lengthOfSocialObject > 0){
+          const socials = data[0]?.socials
+
+           socialObj = {
+            facebook: socials?.facebook,
+            twitter: socials?.twitter,
+            instagram: socials?.instagram,
+            youtube: socials?.youtube,
+            linkedin: socials?.linkedin,
+            github: socials?.github,
+          }
         setSocials(socialObj)
-        setData(response[0])
-        setUserFound(true)
-        updateUser({
-          ...response[0],
+         updateUser({
+          ...data,
           socials: socialObj,
+          titles: data[0].titles.S,
+          links: data[0].links.S
         })
-      })
-      .catch((err) => {
-        console.log(err)
-      })
-      .finally(() => {
-        setLoading(false); // Set loading to false regardless of success or failure
-      });
-  }, [handle]); // Include handle in the dependency array to re-run the effect when handle changes
 
-  console.log("console statement from handle.js", user)
-
-  if (loading) {
-    return <div> 
-    <div
-      class="inline-block h-8 w-8 animate-[spinner-grow_0.75s_linear_infinite] rounded-full bg-current align-[-0.125em] text-primary opacity-0 motion-reduce:animate-[spinner-grow_1.5s_linear_infinite]"
-      role="status">
-      <span
-        class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
-        >Loading...</span>
-    </div>
-    <div
-      class="inline-block h-8 w-8 animate-[spinner-grow_0.75s_linear_infinite] rounded-full bg-current align-[-0.125em] text-secondary opacity-0 motion-reduce:animate-[spinner-grow_1.5s_linear_infinite]"
-      role="status">
-      <span
-        class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
-        >Loading...</span>
-    </div>
-    <div
-      class="inline-block h-8 w-8 animate-[spinner-grow_0.75s_linear_infinite] rounded-full bg-current align-[-0.125em] text-success opacity-0 motion-reduce:animate-[spinner-grow_1.5s_linear_infinite]"
-      role="status">
-      <span
-        class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
-        >Loading...</span>
-    </div>
-    <div
-      class="inline-block h-8 w-8 animate-[spinner-grow_0.75s_linear_infinite] rounded-full bg-current align-[-0.125em] text-danger opacity-0 motion-reduce:animate-[spinner-grow_1.5s_linear_infinite]"
-      role="status">
-      <span
-        class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
-        >Loading...</span>
-    </div>
-    <div
-      class="inline-block h-8 w-8 animate-[spinner-grow_0.75s_linear_infinite] rounded-full bg-current align-[-0.125em] text-warning opacity-0 motion-reduce:animate-[spinner-grow_1.5s_linear_infinite]"
-      role="status">
-      <span
-        class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
-        >Loading...</span>
-    </div>
-    <div
-      class="inline-block h-8 w-8 animate-[spinner-grow_0.75s_linear_infinite] rounded-full bg-current align-[-0.125em] text-info opacity-0 motion-reduce:animate-[spinner-grow_1.5s_linear_infinite]"
-      role="status">
-      <span
-        class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
-        >Loading...</span>
-    </div>
-    <div
-      class="inline-block h-8 w-8 animate-[spinner-grow_0.75s_linear_infinite] rounded-full bg-current align-[-0.125em] text-neutral-100 opacity-0 motion-reduce:animate-[spinner-grow_1.5s_linear_infinite]"
-      role="status">
-      <span
-        class="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]"
-        >Loading...</span>
-    </div></div>
-  }
-
-  if (!userFound) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <div className="px-2 not-found ">
-          <h1 className="text-lg font-bold">User Not Found 😞</h1>
-
-          <p>
-            If you're looking for a page, double-check the spelling and try
-            again.
-          </p>
-        </div>
-        Create your Own{" "}
-        <Link
-          className="px-3 ml-2 text-left text-white transition-all duration-500 bg-indigo-500 hover:bg-indigo-400"
-          href="apply"
-        >
-          LinkTree
-        </Link>
-      </div>
-    );
-  }
+        }
+  else {
+        updateUser({
+          ...data,
+          titles: data[0].titles.S,
+          links: data[0].links.S
+        })
+      }
 
 
-  console.log("the links array is", linksArray)
+        setData(data)
+        setUserFound(true)
+       
+
+        // console.log(data, "data in the useEffect")
+      } catch (error) {
+        console.error("Error fetching data:", error)
+      }
+    }
+
+    fetchData()
+  }, [handle])
+
   return (
     <>
-      <div className="relative max-w-3xl mx-auto  mt-10 bg-white/95 rounded-2xl">
+      <div className="relative max-w-3xl mx-auto mt-10 bg-white/95 rounded-2xl">
         <ShareButton />
-        <LinkTree data={data} />
+      {user &&  <LinkTree data={data} />}
         <SocialTree socials={socials} />
-        <div className="mt-10">
-        {
-          linksArray && linksArray.map((link) => {
-            return  <LinkTreeCard data = {link}/> 
-          })
-        }
-        </div>
+        {/* <div className="mt-10">
+            {
+              linksArray && linksArray.map((link) => {
+                return  <LinkTreeCard data = {link}/>
+              })
+            }
+            </div> */}
       </div>
     </>
-  );
-};
-
-export default handle;
+  )
+}

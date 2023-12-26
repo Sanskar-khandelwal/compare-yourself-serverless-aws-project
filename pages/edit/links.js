@@ -265,6 +265,8 @@ import axios from "axios"
 import { AccountContext } from "@/context/Account"
 import { useRouter } from "next/router"
 import { toast } from "react-toastify"
+import AddLinkModal from "@/components/AddLinkModal"
+
 
 const links = () => {
   const router = useRouter()
@@ -277,10 +279,25 @@ const links = () => {
   } = useContext(AccountContext)
 
   const [links, setLinks] = useState([{ title: "", url: "" }])
-  const [receivedLinks, setReceivedLinks] = useState(null)
+  
   const [handle, setHandle] = useState(null)
-  const [title, setTitle] = useState("")
+  const [currentUser, setCurrentUser] = useState(null)
+  
+  const [isModalOpen, setModalOpen] = useState(false);
 
+
+  const [receivedLinksArray, setReceivedLinksArray] = useState(null)
+  const [receivedTitlesArray, setTitlesArray] = useState(null)
+
+    const openModal = () => {
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+  };
+ 
+  
   useEffect(() => {
     if (isAuthenticated()) {
       getSession()
@@ -302,7 +319,8 @@ const links = () => {
                 const response = res.data
                 console.log("received this response from dynamodb: ", response)
                 const socials = response[0].socials
-                setReceivedLinks([response[0].links?.slice(-1, 1)])
+                const tempLink = response[0].links.S
+                
                 const socialObj = {
                   facebook: socials?.facebook.S,
                   twitter: socials?.twitter.S,
@@ -317,6 +335,8 @@ const links = () => {
                   ...response[0],
                   socials: socialObj,
                 })
+
+                setCurrentUser(user)
               })
               .catch((err) => {
                 console.log(err)
@@ -413,6 +433,15 @@ const links = () => {
 
   return (
     <>
+      {isModalOpen && user &&(
+        <AddLinkModal isOpen={isModalOpen} onClose={closeModal} currentUser={user}  serverLinks={""}  setReceivedLinks={""} />
+      )}
+         <button
+            className="float-right px-2 py-2 bg-gray-200 cursor-pointer"
+            onClick={openModal}
+          >
+            Add Link
+          </button>
       <div>
         <UserHeader handle={handle} />
         <main className="mt-4">

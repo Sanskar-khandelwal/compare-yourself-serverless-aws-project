@@ -95,7 +95,8 @@ const socials = () => {
         'handle': user.handle,
         'userId': user.userId,
         'email': user.email,
-        'link': user.link,       
+        'links': user.links, 
+        'titles': user.titles,     
         'socials': socials
    }
       axios
