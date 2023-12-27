@@ -7,8 +7,11 @@ import { useRouter } from 'next/router'
 import { AccountContext } from '@/context/Account'
 import Link from 'next/link'
 
-const AddLinkModal = ({isOpen, onClose, currentUser,serverLinks,  setReceivedLinks}) => {
-  console.log(currentUser)
+const AddLinkModal = ({isOpen, onClose, currentUser,serverLinks,  serverTitles}) => {
+  console.log("the current user is", currentUser)
+  console.log("console speaking from dashborad", serverLinks, serverTitles)
+  console.log(currentUser[0].name, "<- name saying hello")
+  console.log(currentUser.name, currentUser.handle, currentUser.email)
   // console.log("this is the serverlinks", serverLinks)
 
   const router = useRouter()
@@ -95,28 +98,26 @@ const AddLinkModal = ({isOpen, onClose, currentUser,serverLinks,  setReceivedLin
    if(!isValidURL(url)){
     return toast.error("Please Enter a Valid Url")
    } 
-    const titleArray = new Array()
-    titleArray.push(title)
-    const LinkArray = new Array()
-    LinkArray.push(url)
     
-    console.log(titleArray, LinkArray,"<- Arrays")
-    console.log(arrayToStringFormat(titleArray), arrayToStringFormat(LinkArray) )
+    serverTitles.push(title)
+    serverLinks.push(url)
+
+    console.log(arrayToStringFormat(serverLinks), arrayToStringFormat(serverTitles) )
 
     getSession()
       .then((cognitoUserSession) => {
        
           
         const payload = {
-          name: user?.name,
-          bio: user?.bio,
-          image: user?.image,
-          handle: user?.handle,
-          userId: user?.userId,
-          email: user?.email,
-          socials: user?.socials,
-          links: arrayToStringFormat(LinkArray),
-          titles: arrayToStringFormat(titleArray)
+          name: currentUser[0].name,
+          bio: currentUser[0]?.bio,
+          image: currentUser[0]?.image,
+          handle: currentUser[0].handle,
+          userId: currentUser[0]?.userId,
+          email: currentUser[0].email,
+          socials: currentUser[0].name,
+          links: arrayToStringFormat(serverLinks),
+          titles: arrayToStringFormat(serverTitles)
         }
         console.log(cognitoUserSession.getIdToken().getJwtToken())
 
