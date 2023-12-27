@@ -267,7 +267,6 @@ import { useRouter } from "next/router"
 import { toast } from "react-toastify"
 import AddLinkModal from "@/components/AddLinkModal"
 
-
 const links = () => {
   const router = useRouter()
   const {
@@ -279,25 +278,43 @@ const links = () => {
   } = useContext(AccountContext)
 
   const [links, setLinks] = useState([{ title: "", url: "" }])
-  
+
   const [handle, setHandle] = useState(null)
   const [currentUser, setCurrentUser] = useState(null)
-  
-  const [isModalOpen, setModalOpen] = useState(false);
 
+  const [isModalOpen, setModalOpen] = useState(false)
 
-  const [receivedLinksArray, setReceivedLinksArray] = useState(null)
-  const [receivedTitlesArray, setTitlesArray] = useState(null)
+  const [receivedLinksArray, setReceivedLinksArray] = useState([])
+  const [receivedTitlesArray, setReceivedTitlesArray] = useState([])
 
-    const openModal = () => {
-    setModalOpen(true);
-  };
+  const openModal = () => {
+    setModalOpen(true)
+  }
 
   const closeModal = () => {
-    setModalOpen(false);
-  };
- 
+    setModalOpen(false)
+  }
   
+
+  
+  function convertToArray(inputString){
+    try {
+      // Remove square brackets and spaces, then split by commas
+      const array = inputString.replace(/\[|\]|\s/g, '').split(',');
+  
+      // Filter out empty strings and trim whitespace
+      const resultArray = array.filter(item => item.trim() !== '');
+    
+      console.log("The converted array is", resultArray)
+      return resultArray;
+    } catch (error) {
+      console.error('Error converting string to array:', error);
+      return [];
+    }
+  }
+
+
+
   useEffect(() => {
     if (isAuthenticated()) {
       getSession()
@@ -316,25 +333,40 @@ const links = () => {
                 }
               )
               .then((res) => {
-                const response = res.data
-                console.log("received this response from dynamodb: ", response)
-                const socials = response[0].socials
-                const tempLink = response[0].links.S
-                
-                const socialObj = {
-                  facebook: socials?.facebook.S,
-                  twitter: socials?.twitter.S,
-                  instagram: socials?.instagram.S,
-                  youtube: socials?.youtube.S,
-                  linkedin: socials?.linkedin.S,
-                  github: socials?.github.S,
+                const data = res.data
+                console.log("received this response from dynamodb: ", data)
+                let lengthOfSocialObject = Object.keys(data[0].socials).length
+                if (data[0].titles.S && data[0].links.S) {      
+                  setReceivedLinksArray(convertToArray(data[0].links.S))
+                  setReceivedTitlesArray(convertToArray(data[0].titles.S))              
                 }
-                console.log("This is the social obj", socialObj)
 
-                updateUser({
-                  ...response[0],
-                  socials: socialObj,
-                })
+               
+                if (lengthOfSocialObject > 0) {
+                  const socials = data[0]?.socials
+
+                let  socialObj = {
+                    facebook: socials?.facebook.S,
+                    twitter: socials?.twitter.S,
+                    instagram: socials?.instagram.S,
+                    youtube: socials?.youtube.S,
+                    linkedin: socials?.linkedin.S,
+                    github: socials?.github.S,
+                  }
+                 
+                  updateUser({
+                    ...data,
+                    socials: socialObj,
+                    titles: data[0].titles ? data[0].titles.S : "",
+                    links: data[0].links ? data[0].links.S : "",
+                  })
+                } else {
+                  updateUser({
+                    ...data,
+                    titles: data[0].titles ? data[0].titles.S : "",
+                    links: data[0].links ? data[0].titles.S : "",
+                  })
+                }
 
                 setCurrentUser(user)
               })
@@ -359,17 +391,17 @@ const links = () => {
     getSession()
       .then((cognitoUserSession) => {
         const linksArray = Object.values(links)
-         console.log("the links array", linksArray)
+        console.log("the links array", linksArray)
 
         function convertToJsonString(data) {
           // Convert the array to a JSON string with removed double quotes
           const jsonString = JSON.stringify(data)
-            .replace(/\"([^(\")"]+)\":/g, '$1:')
-            .replace(/"/g, '');
-        
-          return jsonString;
+            .replace(/\"([^(\")"]+)\":/g, "$1:")
+            .replace(/"/g, "")
+
+          return jsonString
         }
-          
+
         const payload = {
           name: user?.name,
           bio: user?.bio,
@@ -383,7 +415,7 @@ const links = () => {
 
         console.log(payload, "in links.js")
 
-        updateUser({...payload, links: linksArray})
+        updateUser({ ...payload, links: linksArray })
         axios
           .post(
             "https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself",
@@ -429,19 +461,26 @@ const links = () => {
     setLinks(updatedLinks)
   }
 
-
-
   return (
     <>
-      {isModalOpen && user &&(
-        <AddLinkModal isOpen={isModalOpen} onClose={closeModal} currentUser={user}  serverLinks={""}  setReceivedLinks={""} />
+      {isModalOpen && user && (
+        <AddLinkModal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          currentUser={user}
+          serverLinks={receivedLinksArray}
+          serverTitles={receivedTitlesArray}
+        />
       )}
-         <button
-            className="float-right px-2 py-2 bg-gray-200 cursor-pointer"
-            onClick={openModal}
-          >
-            Add Link
-          </button>
+      {
+         console.log("the links converted is ", receivedLinksArray)
+      }
+      <button
+        className="float-right px-2 py-2 bg-gray-200 cursor-pointer"
+        onClick={openModal}
+      >
+        Add Link
+      </button>
       <div>
         <UserHeader handle={handle} />
         <main className="mt-4">

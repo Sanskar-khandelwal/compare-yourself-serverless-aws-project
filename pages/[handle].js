@@ -29,9 +29,27 @@ export default function Handle() {
   const [userFound, setUserFound] = useState(false)
   const [loading, setLoading] = useState(true)
   const [socials, setSocials] = useState(null)
+  const [receivedLinksArray, setReceivedLinksArray] = useState([])
+  const [receivedTitlesArray, setReceivedTitlesArray] = useState([])
   const { getSession, user, updateUser } = useContext(AccountContext)
 
-  console.log(handle, "handle in blog")
+  
+  function convertToArray(inputString){
+    try {
+      // Remove square brackets and spaces, then split by commas
+      const array = inputString.replace(/\[|\]|\s/g, '').split(',');
+  
+      // Filter out empty strings and trim whitespace
+      const resultArray = array.filter(item => item.trim() !== '');
+    
+      console.log("The converted array is", resultArray)
+      return resultArray;
+    } catch (error) {
+      console.error('Error converting string to array:', error);
+      return [];
+    }
+  }
+
 
   useEffect(() => {
     setCount[(prev) => prev + 1]
@@ -43,8 +61,12 @@ export default function Handle() {
         let socialObj;
 
         console.log(typeof data[0].socials)
-        let lengthOfSocialObject = Object.keys(data[0].socials).length;
-    
+        if (data[0].titles.S && data[0].links.S) {      
+          setReceivedLinksArray(convertToArray(data[0].links.S))
+          setReceivedTitlesArray(convertToArray(data[0].titles.S))              
+        }
+        if(data[0].socials){
+        let lengthOfSocialObject = Object.keys(data[0].socials).length;  
         if(lengthOfSocialObject > 0){
           const socials = data[0]?.socials
 
@@ -57,19 +79,22 @@ export default function Handle() {
             github: socials?.github,
           }
         setSocials(socialObj)
-         updateUser({
+        updateUser({
           ...data,
           socials: socialObj,
-          titles: data[0].titles.S,
-          links: data[0].links.S
+          titles: data[0].titles ? data[0].titles.S : "",
+          links: data[0].links ? data[0].links.S :  ""
         })
+      }
+       
 
         }
+
   else {
         updateUser({
           ...data,
-          titles: data[0].titles.S,
-          links: data[0].links.S
+          titles: data[0].titles ? data[0].titles.S : "",
+          links: data[0].links ? data[0].titles.S : ""
         })
       }
 
@@ -91,16 +116,15 @@ export default function Handle() {
     <>
       <div className="relative max-w-3xl mx-auto mt-10 bg-white/95 rounded-2xl">
         <ShareButton />
-      {user &&  <LinkTree data={data} />}
+        {user && <LinkTree data={data} />}
         <SocialTree socials={socials} />
-        {/* <div className="mt-10">
-            {
-              linksArray && linksArray.map((link) => {
-                return  <LinkTreeCard data = {link}/>
-              })
-            }
-            </div> */}
+        <div className="mt-10">
+          {receivedLinksArray.map((url, index) => (
+            <LinkTreeCard key={index} url={url} title={receivedTitlesArray[index]} />
+          ))}
+        </div>
       </div>
     </>
-  )
+  );
+  
 }
