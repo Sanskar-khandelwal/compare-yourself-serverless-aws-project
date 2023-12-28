@@ -2,11 +2,19 @@ import React from "react"
 import Link from "next/link"
 
 const SocialTree = (props) => {
+  console.log(props.socials, "i am props.socials")
   if(props.socials == null){
     return
   }
+  const network = props.socials;
+  
+  let facebook = network.facebook ? network.facebook.S : ""
+  let instagram  = network.instagram ? network.instagram.S : ""
+  let twitter = network.twitter ? network.twitter.S : ""
+  let github = network.github ? network.github.S : ''
+  let linkedin = network.linkedin ? network.linkedin.S : ""
+  let youtube = network.youtube ? network.youtube.S : ""
  
- const {facebook = "" , linkedin = "", twitter = "", instagram ="", github ="", youtube =""} = props.socials
   return (
     <>
       <div className="flex flex-row justify-center mx-auto mt-5 social">
