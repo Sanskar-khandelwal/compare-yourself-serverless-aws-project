@@ -286,34 +286,40 @@ const links = () => {
 
   const [receivedLinksArray, setReceivedLinksArray] = useState([])
   const [receivedTitlesArray, setReceivedTitlesArray] = useState([])
+  const [socials, setSocials] = useState({
+    facebook: "",
+    twitter: "",
+    instagram: "",
+    youtube: "",
+    linkedin: "",
+    github: "",
+  })
 
   const openModal = () => {
     setModalOpen(true)
+   
   }
 
   const closeModal = () => {
     setModalOpen(false)
+ 
   }
-  
 
-  
-  function convertToArray(inputString){
+  function convertToArray(inputString) {
     try {
       // Remove square brackets and spaces, then split by commas
-      const array = inputString.replace(/\[|\]|\s/g, '').split(',');
-  
+      const array = inputString.replace(/\[|\]|\s/g, "").split(",")
+
       // Filter out empty strings and trim whitespace
-      const resultArray = array.filter(item => item.trim() !== '');
-    
+      const resultArray = array.filter((item) => item.trim() !== "")
+
       console.log("The converted array is", resultArray)
-      return resultArray;
+      return resultArray
     } catch (error) {
-      console.error('Error converting string to array:', error);
-      return [];
+      console.error("Error converting string to array:", error)
+      return []
     }
   }
-
-
 
   useEffect(() => {
     if (isAuthenticated()) {
@@ -336,39 +342,40 @@ const links = () => {
                 const data = res.data
                 console.log("received this response from dynamodb: ", data)
                 let lengthOfSocialObject = Object.keys(data[0].socials).length
-                if (data[0].titles.S && data[0].links.S) {      
+                if (data[0].titles.S && data[0].links.S) {
                   setReceivedLinksArray(convertToArray(data[0].links.S))
-                  setReceivedTitlesArray(convertToArray(data[0].titles.S))              
+                  setReceivedTitlesArray(convertToArray(data[0].titles.S))
                 }
 
-               
-                if (lengthOfSocialObject > 0) {
-                  const socials = data[0]?.socials
+                //socials edit start
 
-                let  socialObj = {
-                    facebook: socials?.facebook.S,
-                    twitter: socials?.twitter.S,
-                    instagram: socials?.instagram.S,
-                    youtube: socials?.youtube.S,
-                    linkedin: socials?.linkedin.S,
-                    github: socials?.github.S,
+                let socialObj
+                if (data[0].socials) {
+                  let lengthOfSocialObject = Object.keys(
+                    data[0].socials
+                  ).length
+                  if (lengthOfSocialObject > 0) {
+                    const socials = data[0]?.socials
+                    socialObj = {
+                      facebook: socials?.facebook.S,
+                      twitter: socials?.twitter.S,
+                      instagram: socials?.instagram.S,
+                      youtube: socials?.youtube.S,
+                      linkedin: socials?.linkedin.S,
+                      github: socials?.github.S,
+                    }
+                    setSocials(socialObj)
                   }
-                 
-                  updateUser({
-                    ...data,
-                    socials: socialObj,
-                    titles: data[0].titles ? data[0].titles.S : "",
-                    links: data[0].links ? data[0].links.S : "",
-                  })
-                } else {
-                  updateUser({
-                    ...data,
-                    titles: data[0].titles ? data[0].titles.S : "",
-                    links: data[0].links ? data[0].titles.S : "",
-                  })
                 }
 
-                setCurrentUser(user)
+                //socials edit end
+
+                updateUser({
+                  ...data,
+                  socials: socials,
+                  titles: data[0].titles ? data[0].titles.S : "",
+                  links: data[0].links ? data[0].links.S : "",
+                })
               })
               .catch((err) => {
                 console.log(err)
@@ -384,6 +391,8 @@ const links = () => {
       router.push("/login")
     }
   }, [])
+
+  // don't modify the below function all the below function are of no use currently, I will later remove them or make them functional
 
   function saveLinks(e) {
     e.preventDefault()
@@ -404,12 +413,12 @@ const links = () => {
 
         const payload = {
           name: user?.name,
-          bio: user?.bio,
-          image: user?.image,
+          bio: user?.bio ? user.bio : "",
+          image: user?.image ? user.image : "",
           handle: user?.handle,
-          userId: user?.userId,
+          userId: user?.userId ? user.userId : "",
           email: user?.email,
-          socials: user?.socials,
+          socials: user?.socials ? user.socials : {},
           links: convertToJsonString(linksArray),
         }
 
@@ -463,6 +472,9 @@ const links = () => {
 
   return (
     <>
+    {
+      console.log("the current user is", user)
+    }
       {isModalOpen && user && (
         <AddLinkModal
           isOpen={isModalOpen}
@@ -472,9 +484,7 @@ const links = () => {
           serverTitles={receivedTitlesArray}
         />
       )}
-      {
-         console.log("the links converted is ", receivedLinksArray)
-      }
+      {console.log("the links converted is ", receivedLinksArray)}
       <button
         className="float-right px-2 py-2 bg-gray-200 cursor-pointer"
         onClick={openModal}

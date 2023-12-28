@@ -11,71 +11,84 @@ import { useRouter } from "next/router"
 
 const socials = () => {
   const router = useRouter()
-  const { getSession, updateUser , user, isAuthenticated} = useContext(AccountContext)
+  const { getSession, updateUser, user, isAuthenticated } =
+    useContext(AccountContext)
   const [handle, setHandle] = useState(null)
-
-  useEffect(() => {
-    if(isAuthenticated()){ 
-       getSession()
-      .then((cognitoUserSession) => {
-    if(cognitoUserSession.isValid()){
-       const handle = cognitoUserSession.idToken.payload["cognito:username"]
-       setHandle(handle)
-       axios
-       .get(
-         `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${handle}`,
-         {
-           headers: {
-             "Content-Type": "application/json",
-           },
-         }
-       )
-       .then((res) => {
-         const response = res.data
-         console.log("received this response from dynamodb: ", response)
-         const socials = response[0].socials
-         const socialObj = {
-           facebook: socials.instagram.S,
-           twitter: socials.twitter.S,
-           instagram: socials.instagram.S,
-           youtube: socials.youtube.S,
-           linkedin: socials.linkedin.S,
-           github: socials.github.S,
-         }
-         console.log("This is the social obj", socialObj)
-         setHandle(response[0].handle)
-
-         updateUser({
-           ...response[0],
-           socials: socialObj,
-         })
-       })
-       .catch((err) =>{
-         console.log(err)
-       })
-      }
-      else{
-        router.push("/login")
-      }
-       
-      })
-      .catch((err) => {
-        router.push("/login")
-      })} else{
-        router.push('/login')
-      }
-  }, [])
   const [socials, setSocials] = useState({
-
-    facebook: '',
-    twitter: '',
-    instagram: '',
-    youtube: '',
-    linkedin: '',
-    github: '',
-  
+    facebook: "",
+    twitter: "",
+    instagram: "",
+    youtube: "",
+    linkedin: "",
+    github: "",
   })
 
+  useEffect(() => {
+    if (isAuthenticated()) {
+      getSession()
+        .then((cognitoUserSession) => {
+          if (cognitoUserSession.isValid()) {
+            const handle =
+              cognitoUserSession.idToken.payload["cognito:username"]
+            setHandle(handle)
+            axios
+              .get(
+                `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${handle}`,
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              )
+              .then((res) => {
+                const response = res.data
+                console.log("received this response from dynamodb: ", response)
+                let socialObj = {}
+                if (response[0].socials) {
+                  let lengthOfSocialObject = Object.keys(
+                    response[0].socials
+                  ).length
+                  if (lengthOfSocialObject > 0) {
+                    const socials = response[0]?.socials
+                    socialObj = {
+                      facebook: socials?.facebook.S,
+                      twitter: socials?.twitter.S,
+                      instagram: socials?.instagram.S,
+                      youtube: socials?.youtube.S,
+                      linkedin: socials?.linkedin.S,
+                      github: socials?.github.S,
+                    }
+                    setSocials(socialObj)
+                    
+                  }
+                  updateUser({
+                    ...response,
+                    socials: socialObj,
+                  })
+                }
+                
+                console.log("This is the social obj", socialObj)
+                setHandle(response[0].handle)
+
+                updateUser({
+                  ...response[0],
+                  socials: socialObj,
+                })
+              })
+              .catch((err) => {
+                console.log(err)
+              })
+          } else {
+            router.push("/login")
+          }
+        })
+        .catch((err) => {
+          router.push("/login")
+        })
+    } else {
+      router.push("/login")
+    }
+  }, [])
 
   function handleSocials(e) {
     setSocials({
@@ -87,48 +100,48 @@ const socials = () => {
   function saveSocials(e) {
     e.preventDefault()
     getSession()
-    .then((cognitoUserSession) => { 
-      const payload = {
-        'name': user.name,
-        'bio': user.bio,
-        'image': user.image,
-        'handle': user.handle,
-        'userId': user.userId,
-        'email': user.email,
-        'links': user.links, 
-        'titles': user.titles,     
-        'socials': socials
-   }
-      axios
-        .post(
-          "https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself",
-         payload,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": cognitoUserSession.getIdToken().getJwtToken()
-            },
-          }
-        )
-        .then((res) => {
-          const data = res
-          console.log("console statement from socials.js", data)
-          updateUser(payload)
-          if (data.status == "error") return toast.error(data.error)
-          toast.success("Profile saved Successfully")
-        })
-        .catch((e) => {
-          console.log(e)
-          toast.error(e.message)
-        })
-    })
-    .catch((error) => {
-      // Handle any errors that occurred during the getSession method
-      console.error("Error:", error)
-    })
+      .then((cognitoUserSession) => {
+        console.log(user, "user in edit socials")
+        const payload = {
+          name: user.name,
+          bio: user.bio ? user.bio : "",
+          image: user.image ? user.image : "",
+          handle: user.handle ? user.handle : "",
+          userId: user.userId ? user.userId : "",
+          email: user.email,
+          links: user.links ? user.links.S : "",
+          titles: user.titles ? user.titles.S : "",
+          socials: socials,
+        }
+        console.log(" the payload is", payload)
+        axios
+          .post(
+            "https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself",
+            payload,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: cognitoUserSession.getIdToken().getJwtToken(),
+              },
+            }
+          )
+          .then((res) => {
+            const data = res
+            console.log("console statement from socials.js", data)
+            updateUser(payload)
+            if (data.status == "error") return toast.error(data.error)
+            toast.success("Profile saved Successfully")
+          })
+          .catch((e) => {
+            console.log(e)
+            toast.error(e.message)
+          })
+      })
+      .catch((error) => {
+        // Handle any errors that occurred during the getSession method
+        console.error("Error:", error)
+      })
   }
-
-
 
   return (
     <>

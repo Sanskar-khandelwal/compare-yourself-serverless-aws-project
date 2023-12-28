@@ -16,6 +16,14 @@ const profile = () => {
   const { getSession, user , updateUser, getAuthenticatedUser, isAuthenticated} = useContext(AccountContext)
   const [handle, setHandle] = useState(null)
   const [data, setData] = useState({})
+  const [socials, setSocials] = useState({
+    facebook: "",
+    twitter: "",
+    instagram: "",
+    youtube: "",
+    linkedin: "",
+    github: "",
+  })
 
 
   useEffect(() => {
@@ -37,21 +45,32 @@ const profile = () => {
        .then((res) => {
          const response = res.data
          console.log("received this response from dynamodb: ", response)
-         const socials = response[0].socials
-         const socialObj = {
-           'facebook': socials?.facebook.S,
-           'twitter': socials?.twitter.S,
-           'instagram': socials?.instagram.S,
-           'youtube': socials?.youtube.S,
-           'linkedin': socials?.linkedin.S,
-           'github': socials?.github.S,
-         }
-         console.log("This is the social obj", socialObj)
+
+
+         //// social changes
+        let socialObj;
+         if (response[0].socials) {
+          let lengthOfSocialObject = Object.keys(
+            response[0].socials
+          ).length
+          if (lengthOfSocialObject > 0) {
+            const socials = response[0]?.socials
+            socialObj = {
+              facebook: socials?.facebook.S,
+              twitter: socials?.twitter.S,
+              instagram: socials?.instagram.S,
+              youtube: socials?.youtube.S,
+              linkedin: socials?.linkedin.S,
+              github: socials?.github.S,
+            }
+            setSocials(socialObj)           
+          }
+        }
          setData(response[0])
-          
+        
          updateUser({
            ...response[0],
-           socials: socialObj,
+           socials: socials,
          })
        })
        .catch((err) =>{
@@ -91,9 +110,9 @@ const profile = () => {
         "handle": user?.handle,
         "userId": user?.userId,
         "email": user?.email,
-        "socials": user?.socials,
-        "links": user?.links,
-        "titles": user?.titles
+        "socials": user?.socials ,
+        "links": user?.links ? user.links.S : "", 
+        "titles": user?.titles ? user.titles.S : ""
    }
  
    console.log(cognitoUserSession.getIdToken().getJwtToken())
