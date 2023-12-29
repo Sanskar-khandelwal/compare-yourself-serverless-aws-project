@@ -15,11 +15,13 @@ const dashboard = () => {
   const router = useRouter()
   const { getSession, user, updateUser, isAuthenticated, getAuthenticatedUser } = useContext(AccountContext)
   const [handle, setHandle]  = useState(null)
-
-
   const [loading, setLoading] = useState(true)
+ 
+
+
+ 
   useEffect(() => {
-    setLoading(false)
+   
     if(isAuthenticated()){ 
        getSession()
       .then((cognitoUserSession) => {
@@ -53,31 +55,42 @@ const dashboard = () => {
            ...response[0],
            socials: socialObj,
          })
+         setLoading(false)
        })
        .catch((err) => {
          if ((err.message = "Network Error")) {
                 console.log("Message from social Verse: Network Issue detected")
          }
+         setLoading(false)
          console.log(err)
        })
       }
       else{
         router.push("/login")
+        setLoading(false)
       }
        
       })
       .catch((err) => {
         router.push("/login")
+        setLoading(false)
       })} else{
         router.push('/login')
+        setLoading(false)
       }
   }, [])
 
 
 
   console.log("user recevied in dashboard", user)
-  if(loading){
-    return "Loading..."
+  
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        <h1 className="font-semibold text-2xl"> Dude Hang On, let Me load</h1>
+      </div>
+    )
   }
   return (
     <>
