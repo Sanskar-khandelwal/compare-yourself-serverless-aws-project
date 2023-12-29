@@ -278,6 +278,7 @@ const links = () => {
   } = useContext(AccountContext)
 
   const [links, setLinks] = useState([{ title: "", url: "" }])
+  const [loading, setLoading] = useState(true)
 
   const [handle, setHandle] = useState(null)
   const [currentUser, setCurrentUser] = useState(null)
@@ -376,19 +377,25 @@ const links = () => {
                   titles: data[0].titles ? data[0].titles.S : "",
                   links: data[0].links ? data[0].links.S : "",
                 })
+
+                setLoading(false)
               })
               .catch((err) => {
                 console.log(err)
+                setLoading(false)
               })
           } else {
             router.push("/login")
+            setLoading(false)
           }
         })
         .catch((err) => {
           router.push("/login")
+          setLoading(false)
         })
     } else {
       router.push("/login")
+      setLoading(false)
     }
   }, [])
 
@@ -468,6 +475,15 @@ const links = () => {
     const updatedLinks = [...links]
     updatedLinks.splice(index, 1)
     setLinks(updatedLinks)
+  }
+
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+      <h1 className="font-semibold text-2xl"> Dude Hang On, let Me load</h1>
+      </div>
+    )
   }
 
   return (

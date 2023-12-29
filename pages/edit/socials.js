@@ -14,6 +14,7 @@ const socials = () => {
   const { getSession, updateUser, user, isAuthenticated } =
     useContext(AccountContext)
   const [handle, setHandle] = useState(null)
+  const [loading, setLoading] = useState(true)
   const [socials, setSocials] = useState({
     facebook: "",
     twitter: "",
@@ -74,12 +75,15 @@ const socials = () => {
                   ...response[0],
                   socials: socialObj,
                 })
+                setLoading(false)
               })
               .catch((err) => {
                 console.log(err)
+                setLoading(false)
               })
           } else {
             router.push("/login")
+            setLoading(false)
           }
         })
         .catch((err) => {
@@ -141,6 +145,14 @@ const socials = () => {
         // Handle any errors that occurred during the getSession method
         console.error("Error:", error)
       })
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        <h1 className="font-semibold text-2xl"> Dude Hang On, let Me load</h1>
+      </div>
+    )
   }
 
   return (

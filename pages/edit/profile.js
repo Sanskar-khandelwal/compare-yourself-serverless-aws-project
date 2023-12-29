@@ -13,7 +13,14 @@ import LinkTree from "@/components/LinkTree"
 
 const profile = () => {
   const router = useRouter()
-  const { getSession, user , updateUser, getAuthenticatedUser, isAuthenticated} = useContext(AccountContext)
+  const {
+    getSession,
+    user,
+    updateUser,
+    getAuthenticatedUser,
+    isAuthenticated,
+  } = useContext(AccountContext)
+  const [loading, setLoading] = useState(true)
   const [handle, setHandle] = useState(null)
   const [data, setData] = useState({})
   const [socials, setSocials] = useState({
@@ -25,135 +32,141 @@ const profile = () => {
     github: "",
   })
 
-
   useEffect(() => {
-    if(isAuthenticated()){ 
-       getSession()
-      .then((cognitoUserSession) => {
-    if(cognitoUserSession.isValid()){
-       const handle = cognitoUserSession.idToken.payload["cognito:username"]
-       setHandle(handle)
-       axios
-       .get(
-         `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${handle}`,
-         {
-           headers: {
-             "Content-Type": "application/json",
-           },
-         }
-       )
-       .then((res) => {
-         const response = res.data
-         console.log("received this response from dynamodb: ", response)
+    if (isAuthenticated()) {
+      getSession()
+        .then((cognitoUserSession) => {
+          if (cognitoUserSession.isValid()) {
+            const handle =
+              cognitoUserSession.idToken.payload["cognito:username"]
+            setHandle(handle)
+            axios
+              .get(
+                `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${handle}`,
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              )
+              .then((res) => {
+                const response = res.data
+                console.log("received this response from dynamodb: ", response)
 
+                //// social changes
+                let socialObj
+                if (response[0].socials) {
+                  let lengthOfSocialObject = Object.keys(
+                    response[0].socials
+                  ).length
+                  if (lengthOfSocialObject > 0) {
+                    const socials = response[0]?.socials
+                    socialObj = {
+                      facebook: socials?.facebook.S,
+                      twitter: socials?.twitter.S,
+                      instagram: socials?.instagram.S,
+                      youtube: socials?.youtube.S,
+                      linkedin: socials?.linkedin.S,
+                      github: socials?.github.S,
+                    }
+                    setSocials(socialObj)
+                  }
+                }
+                setData(response[0])
 
-         //// social changes
-        let socialObj;
-         if (response[0].socials) {
-          let lengthOfSocialObject = Object.keys(
-            response[0].socials
-          ).length
-          if (lengthOfSocialObject > 0) {
-            const socials = response[0]?.socials
-            socialObj = {
-              facebook: socials?.facebook.S,
-              twitter: socials?.twitter.S,
-              instagram: socials?.instagram.S,
-              youtube: socials?.youtube.S,
-              linkedin: socials?.linkedin.S,
-              github: socials?.github.S,
-            }
-            setSocials(socialObj)           
+                updateUser({
+                  ...response[0],
+                  socials: socials,
+                })
+
+                setLoading(false)
+              })
+              .catch((err) => {
+                console.log(err)
+                setLoading(false)
+              })
+          } else {
+            router.push("/login")
+
+            setLoading(false)
           }
-        }
-         setData(response[0])
-        
-         updateUser({
-           ...response[0],
-           socials: socials,
-         })
-       })
-       .catch((err) =>{
-         console.log(err)
-       })
-      }
-      else{
-        router.push("/login")
-      }
-       
-      })
-      .catch((err) => {
-        router.push("/login")
-      })} else{
-        router.push('/login')
-      }
+        })
+        .catch((err) => {
+          router.push("/login")
+        })
+    } else {
+      router.push("/login")
+    }
   }, [])
-  
+
   console.log(user, "in dashboard")
-  const [name, setName] = useState() 
+  const [name, setName] = useState()
   const [bio, setBio] = useState("")
   const [image, setImage] = useState(
     "https://cdn-icons-png.flaticon.com/128/4140/4140048.png"
   )
-  
-
- 
 
   function saveProfile(e) {
     e.preventDefault()
     getSession()
-    .then((cognitoUserSession) => { 
-      const payload = {
-        "name": name,
-        "bio": bio,
-        "image": image,
-        "handle": user?.handle,
-        "userId": user?.userId,
-        "email": user?.email,
-        "socials": user?.socials ,
-        "links": user?.links ? user.links.S : "", 
-        "titles": user?.titles ? user.titles.S : ""
-   }
- 
-   console.log(cognitoUserSession.getIdToken().getJwtToken())
-   updateUser(payload)
-      axios
-        .post(
-          "https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself",
-         payload,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": cognitoUserSession.getIdToken().getJwtToken()
-            },
-          }
-        )
-        .then((res) => {
-          const data = res
-          console.log("console statement from profile.js", data)
-          if (data.status == "error") return toast.error(data.error)
-          toast.success("Profile saved Successfully")
-        })
-        .catch((e) => {
-          console.log(e)
-          toast.error(e.message)
-        })
-    })
-    .catch((error) => {
-      // Handle any errors that occurred during the getSession method
-      console.error("Error:", error)
-    })
+      .then((cognitoUserSession) => {
+        const payload = {
+          name: name,
+          bio: bio,
+          image: image,
+          handle: user?.handle,
+          userId: user?.userId,
+          email: user?.email,
+          socials: user?.socials,
+          links: user?.links ? user.links.S : "",
+          titles: user?.titles ? user.titles.S : "",
+        }
+
+        console.log(cognitoUserSession.getIdToken().getJwtToken())
+        updateUser(payload)
+        axios
+          .post(
+            "https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself",
+            payload,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: cognitoUserSession.getIdToken().getJwtToken(),
+              },
+            }
+          )
+          .then((res) => {
+            const data = res
+            console.log("console statement from profile.js", data)
+            if (data.status == "error") return toast.error(data.error)
+            toast.success("Profile saved Successfully")
+          })
+          .catch((e) => {
+            console.log(e)
+            toast.error(e.message)
+          })
+      })
+      .catch((error) => {
+        // Handle any errors that occurred during the getSession method
+        console.error("Error:", error)
+      })
   }
- 
-  
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+       <h1 className="font-semibold text-2xl"> Dude Hang On, let Me load</h1>
+      </div>
+    )
+  }
 
   return (
     <>
       <div>
-        <UserHeader handle = {handle} />
+        <UserHeader handle={handle} />
         <main>
           <section>
-            <div >
+            <div>
               <h4 className="mb-5 text-lg font-bold text-center">
                 Edit Profile
               </h4>
@@ -218,10 +231,8 @@ const profile = () => {
                     className="w-32 px-4 py-2 text-white bg-blue-600 border shadow-md cursor-pointer rouned-md"
                   />
                 </form>
-               
               </div>
             </div>
-
           </section>
         </main>
       </div>
