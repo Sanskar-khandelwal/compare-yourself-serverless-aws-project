@@ -86,7 +86,7 @@ export default function Handle() {
           links: data[0].links ? data[0].links.S :  ""
         })
       }
-       
+      setLoading(false)
 
         }
 
@@ -96,21 +96,34 @@ export default function Handle() {
           titles: data[0].titles ? data[0].titles.S : "",
           links: data[0].links ? data[0].titles.S : ""
         })
+        setLoading(false)
+
       }
 
 
         setData(data)
         setUserFound(true)
-       
+        setLoading(false)
+
 
         // console.log(data, "data in the useEffect")
       } catch (error) {
         console.error("Error fetching data:", error)
+        setLoading(false)
+
       }
     }
 
     fetchData()
   }, [handle])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        <h1> Dude Hang On, let Me load</h1>
+      </div>
+    )
+  }
 
   return (
     <>

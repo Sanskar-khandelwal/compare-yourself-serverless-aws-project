@@ -44,54 +44,6 @@ const AddLinkModal = ({
     github: "",
   })
 
-  // function convertToJsonString(data) {
-  //   // Convert the array to a JSON string with removed double quotes
-  //   const jsonString = JSON.stringify(data)
-  //     .replace(/\"([^(\")"]+)\":/g, '$1:')
-  //     .replace(/"/g, '');
-
-  //   return jsonString;
-  // }
-
-  // function convertToObjects(input1, input2) {
-  //   const parseInput = (input) => {
-  //     const keyValuePairs = input
-  //       .slice(1, -1) // Remove surrounding square brackets
-  //       .split(',')
-  //       .map((pair) => pair.split(':').map((item) => item.trim()));
-
-  //     const object = {};
-  //     keyValuePairs.forEach(([key, value]) => {
-  //       object[key.slice(1, -1)] = value.slice(1, -1); // Remove surrounding quotes
-  //     });
-
-  //     return object;
-  //   };
-
-  //   const extractUrlTitle = (input) => {
-  //     const obj = parseInput(input);
-  //     return { url: obj.url, title: obj.title };
-  //   };
-
-  //   const array1 = input1.split('},{').map(extractUrlTitle);
-  //   const array2 = input2.split('},{').map(extractUrlTitle);
-
-  //   const combinedArray = array1.concat(array2);
-  //   return combinedArray;
-  // }
-
-  // function convertToStringPayload(oldLinks, newLink){
-  //   console.log("logging")
-  //   console.log(oldLinks, newLink)
-  //    if(oldLinks.length > 0){
-  //     const first = oldLinks.slice(0, -1);
-  //     const second = newLink.substring(1);
-  //     const converted = first + ',' + second;
-  //     return converted;
-  //    }
-  //     return newLink
-
-  // }
 
   function arrayToStringFormat(arr) {
     // Use JSON.stringify to convert the array to a JSON-formatted string
