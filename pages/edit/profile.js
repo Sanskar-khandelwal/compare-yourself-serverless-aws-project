@@ -20,9 +20,18 @@ const profile = () => {
     getAuthenticatedUser,
     isAuthenticated,
   } = useContext(AccountContext)
+
+
   const [loading, setLoading] = useState(true)
   const [handle, setHandle] = useState(null)
   const [data, setData] = useState({})
+  const [name, setName] = useState()
+  const [bio, setBio] = useState("")
+  const [image, setImage] = useState(
+    "https://cdn-icons-png.flaticon.com/128/4140/4140048.png"
+  )
+
+
   const [socials, setSocials] = useState({
     facebook: "",
     twitter: "",
@@ -54,6 +63,10 @@ const profile = () => {
                 console.log("received this response from dynamodb: ", response)
 
                 //// social changes
+                setName(response[0].name)
+                if(response[0].bio){
+                  setBio(response[0].bio)
+                }
                 let socialObj
                 if (response[0].socials) {
                   let lengthOfSocialObject = Object.keys(
@@ -99,12 +112,8 @@ const profile = () => {
     }
   }, [])
 
-  console.log(user, "in dashboard")
-  const [name, setName] = useState()
-  const [bio, setBio] = useState("")
-  const [image, setImage] = useState(
-    "https://cdn-icons-png.flaticon.com/128/4140/4140048.png"
-  )
+  
+ 
 
   function saveProfile(e) {
     e.preventDefault()
@@ -155,7 +164,7 @@ const profile = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center w-full h-screen">
-       <h1 className="font-semibold text-2xl"> Dude Hang On, let Me load</h1>
+       <h1 className="text-2xl font-semibold"> Dude Hang On, let Me load</h1>
       </div>
     )
   }

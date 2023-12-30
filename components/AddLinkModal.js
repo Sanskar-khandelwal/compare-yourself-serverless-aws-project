@@ -44,10 +44,10 @@ const AddLinkModal = ({
     github: "",
   })
 
-
   function arrayToStringFormat(arr) {
     // Use JSON.stringify to convert the array to a JSON-formatted string
     // Replace double quotes with an empty string
+
     return "[" + JSON.stringify(arr).slice(1, -1).replace(/"/g, "") + "]"
   }
 
