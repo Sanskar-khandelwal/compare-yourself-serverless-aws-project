@@ -59,7 +59,7 @@ const Apply = () => {
         }
         setVisible(true)
         setRegisteredUser(result.user)
-
+        localStorage.setItem("firstVisit", "true")
         return
       }
     )
