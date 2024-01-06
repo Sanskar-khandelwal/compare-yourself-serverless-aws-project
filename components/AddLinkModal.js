@@ -7,18 +7,12 @@ import { useRouter } from "next/router"
 import { AccountContext } from "@/context/Account"
 import Link from "next/link"
 
-const AddLinkModal = ({
-  isOpen,
-  onClose,
-  currentUser,
-  serverLinks,
-  serverTitles,
-}) => {
-  console.log("the current user is", currentUser[0])
-  console.log("console speaking from dashborad", serverLinks, serverTitles)
-  console.log(currentUser[0].name, "<- name saying hello")
-  console.log(currentUser[0].name, currentUser[0].handle, currentUser[0].email)
-  // console.log("this is the serverlinks", serverLinks)
+const AddLinkModal = ({ isOpen, onClose, currentUser, serverLinks }) => {
+  if (serverLinks == "undefined" || !serverLinks) {
+    serverLinks = new Array()
+  }
+  console.log("the current user is Modal Component", currentUser)
+  console.log("console speaking from dashborad", serverLinks)
 
   const router = useRouter()
   const {
@@ -29,11 +23,8 @@ const AddLinkModal = ({
     isAuthenticated,
   } = useContext(AccountContext)
 
-  const [link, setLink] = useState([{ url: "", title: "" }])
+  const [link, setLink] = useState({ url: "", title: "" })
   const [payloadLinks, setPayloadLinks] = useState()
-  const [url, setUrl] = useState("")
-  const [title, setTitle] = useState("")
-  // const [receivedLinks, setReceivedLinks] = useState(null)
   const [handle, setHandle] = useState(null)
   const [socials, setSocials] = useState({
     facebook: "",
@@ -43,13 +34,6 @@ const AddLinkModal = ({
     linkedin: "",
     github: "",
   })
-
-  function arrayToStringFormat(arr) {
-    // Use JSON.stringify to convert the array to a JSON-formatted string
-    // Replace double quotes with an empty string
-
-    return "[" + JSON.stringify(arr).slice(1, -1).replace(/"/g, "") + "]"
-  }
 
   function isValidURL(url) {
     try {
@@ -61,26 +45,18 @@ const AddLinkModal = ({
   }
   function saveLinks(e) {
     e.preventDefault()
-    if (!isValidURL(url)) {
+    if (!isValidURL(link.url)) {
       return toast.error("Please Enter a Valid Url")
     }
-
-    serverTitles.push(title)
-    serverLinks.push(url)
-
-    console.log(
-      arrayToStringFormat(serverLinks),
-      arrayToStringFormat(serverTitles)
-    )
 
     getSession()
       .then((cognitoUserSession) => {
         //social changes
         let socialObj
-        if (currentUser[0].socials) {
-          let lengthOfSocialObject = Object.keys(currentUser[0].socials).length
+        if (currentUser.socials) {
+          let lengthOfSocialObject = Object.keys(currentUser.socials).length
           if (lengthOfSocialObject > 0) {
-            const socials = currentUser[0]?.socials
+            const socials = currentUser?.socials
             socialObj = {
               facebook: socials?.facebook.S,
               twitter: socials?.twitter.S,
@@ -92,18 +68,21 @@ const AddLinkModal = ({
             setSocials(socialObj)
           }
         }
+
+        //links
+
+        serverLinks.push(link)
         // social changes end
 
         const payload = {
-          name: currentUser[0].name,
-          bio: currentUser[0]?.bio ? currentUser[0].bio : "",
-          image: currentUser[0]?.image ? currentUser[0].image : "",
-          handle: currentUser[0].handle,
-          userId: currentUser[0]?.userId ? currentUser[0].userId : "",
-          email: currentUser[0].email,
+          name: currentUser.name,
+          bio: currentUser?.bio ? currentUser.bio : "",
+          image: currentUser?.image ? currentUser.image : "",
+          handle: currentUser.handle,
+          userId: currentUser?.userId ? currentUser.userId : "",
+          email: currentUser.email,
           socials: socials,
-          links: arrayToStringFormat(serverLinks),
-          titles: arrayToStringFormat(serverTitles),
+          links: serverLinks ? serverLinks : "",
         }
 
         console.log("the payload is:", payload)
@@ -121,20 +100,26 @@ const AddLinkModal = ({
           )
           .then((res) => {
             const data = res
-            console.log("console statement from links.js", data)
-
+            console.log("console statement from Modal.js", data)
             if (data.status == "error") return toast.error(data.error)
             toast.success("Links saved Successfully")
-          })
-          .catch((e) => {
-            console.log(e)
-            toast.error(e.message)
+            setLink({
+              url: "",
+              title: "",
+            })
           })
       })
       .catch((error) => {
         // Handle any errors that occurred during the getSession method
         console.error("Error:", error)
       })
+  }
+
+  function HandleLink(e) {
+    setLink({
+      ...link,
+      [e.target.name]: e.target.value,
+    })
   }
 
   return (
@@ -154,17 +139,19 @@ const AddLinkModal = ({
               className="p-1 px-2 text-xl text-gray-600 align-baseline border-2 rounded-md shadow outline-none font"
               type="text"
               placeholder="Enter Title"
+              name="title"
               value={link.title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={HandleLink}
             />
           </label>
           <label>
             <input
               className="p-1 px-2 mt-5 text-xl text-gray-600 border-2 rounded-md shadow outline-none font"
               type="text"
+              name="url"
               placeholder="Enter Url"
               value={link.url}
-              onChange={(e) => setUrl(e.target.value)}
+              onChange={HandleLink}
             />
           </label>
           <button
