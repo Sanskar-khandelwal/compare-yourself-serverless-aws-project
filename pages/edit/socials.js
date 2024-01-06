@@ -14,6 +14,7 @@ const socials = () => {
   const { getSession, updateUser, user, isAuthenticated } =
     useContext(AccountContext)
   const [handle, setHandle] = useState(null)
+  const [receivedLinks, setReceivedLinks] = useState([])
   const [loading, setLoading] = useState(true)
   const [socials, setSocials] = useState({
     facebook: "",
@@ -24,6 +25,19 @@ const socials = () => {
     github: "",
   })
 
+  function dbResponseToArray(links) {
+    if (!links || links.length == 0) {
+      return []
+    }
+    const normalizedArray = links.map((link) => {
+      return {
+        title: link.M.title.S,
+        url: link.M.url.S,
+      }
+    })
+    return normalizedArray
+  }
+
   useEffect(() => {
     if (isAuthenticated()) {
       getSession()
@@ -32,6 +46,7 @@ const socials = () => {
             const handle =
               cognitoUserSession.idToken.payload["cognito:username"]
             setHandle(handle)
+
             axios
               .get(
                 `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${handle}`,
@@ -44,6 +59,12 @@ const socials = () => {
               .then((res) => {
                 const response = res.data
                 console.log("received this response from dynamodb: ", response)
+
+                //managing links
+                if (response[0].links.L) {
+                  const normalizedArray = dbResponseToArray(response[0].links.L)
+                  setReceivedLinks(normalizedArray)
+                }
                 let socialObj = {}
                 if (response[0].socials) {
                   let lengthOfSocialObject = Object.keys(
@@ -60,20 +81,20 @@ const socials = () => {
                       github: socials?.github.S,
                     }
                     setSocials(socialObj)
-                    
                   }
                   updateUser({
                     ...response,
                     socials: socialObj,
                   })
                 }
-                
+
                 console.log("This is the social obj", socialObj)
                 setHandle(response[0].handle)
 
                 updateUser({
                   ...response[0],
                   socials: socialObj,
+                  links: receivedLinks,
                 })
                 setLoading(false)
               })
@@ -114,7 +135,6 @@ const socials = () => {
           userId: user.userId ? user.userId : "",
           email: user.email,
           links: user.links ? user.links.S : "",
-          titles: user.titles ? user.titles.S : "",
           socials: socials,
         }
         console.log(" the payload is", payload)
@@ -150,7 +170,7 @@ const socials = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center w-full h-screen">
-        <h1 className="font-semibold text-2xl"> Dude Hang On, let Me load</h1>
+        <h1 className="text-2xl font-semibold"> Dude Hang On, let Me load</h1>
       </div>
     )
   }

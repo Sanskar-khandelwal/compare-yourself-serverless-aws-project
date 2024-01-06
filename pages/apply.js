@@ -80,13 +80,14 @@ const Apply = () => {
         console.log(result)
         authenticate(email, password)
           .then((data) => {
-            console.log("Logged In", data) //
+            console.log("Logged In", data)
             getSession()
               .then((cognitoUserSession) => {
                 const payload = {
                   handle: handle,
                   name: name,
                   email: email,
+                  links: [],
                 }
 
                 console.log("payload for the confirmation:", payload)

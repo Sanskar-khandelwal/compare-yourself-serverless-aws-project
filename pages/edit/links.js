@@ -278,15 +278,11 @@ const links = () => {
   } = useContext(AccountContext)
 
   const [links, setLinks] = useState([{ title: "", url: "" }])
+  const [receivedLinks, setReceivedLinks] = useState([])
   const [loading, setLoading] = useState(true)
-
   const [handle, setHandle] = useState(null)
   const [currentUser, setCurrentUser] = useState(null)
-
   const [isModalOpen, setModalOpen] = useState(false)
-
-  const [receivedLinksArray, setReceivedLinksArray] = useState([])
-  const [receivedTitlesArray, setReceivedTitlesArray] = useState([])
   const [socials, setSocials] = useState({
     facebook: "",
     twitter: "",
@@ -298,96 +294,79 @@ const links = () => {
 
   const openModal = () => {
     setModalOpen(true)
-   
   }
 
   const closeModal = () => {
     setModalOpen(false)
- 
   }
 
-  function convertToArray(inputString) {
-    try {
-      // Remove square brackets and spaces, then split by commas
-      const array = inputString.replace(/\[|\]|\s/g, "").split(",")
-
-      // Filter out empty strings and trim whitespace
-      const resultArray = array.filter((item) => item.trim() !== "")
-
-      console.log("The converted array is", resultArray)
-      return resultArray
-    } catch (error) {
-      console.error("Error converting string to array:", error)
+  function dbResponseToArray(links) {
+    if (!links || links.length == 0) {
       return []
     }
+    const normalizedArray = links.map((link) => {
+      return {
+        title: link.M.title.S,
+        url: link.M.url.S,
+      }
+    })
+    return normalizedArray
   }
 
   useEffect(() => {
     if (isAuthenticated()) {
       getSession()
         .then((cognitoUserSession) => {
-          if (cognitoUserSession.isValid()) {
-            const handle =
-              cognitoUserSession.idToken.payload["cognito:username"]
-            setHandle(handle)
-            axios
-              .get(
-                `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${handle}`,
-                {
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                }
-              )
-              .then((res) => {
-                const data = res.data
-                console.log("received this response from dynamodb: ", data)
-                let lengthOfSocialObject = Object.keys(data[0].socials).length
-                if (data[0].titles.S && data[0].links.S) {
-                  setReceivedLinksArray(convertToArray(data[0].links.S))
-                  setReceivedTitlesArray(convertToArray(data[0].titles.S))
-                }
-
-                //socials edit start
-
-                let socialObj
-                if (data[0].socials) {
-                  let lengthOfSocialObject = Object.keys(
-                    data[0].socials
-                  ).length
-                  if (lengthOfSocialObject > 0) {
-                    const socials = data[0]?.socials
-                    socialObj = {
-                      facebook: socials?.facebook.S,
-                      twitter: socials?.twitter.S,
-                      instagram: socials?.instagram.S,
-                      youtube: socials?.youtube.S,
-                      linkedin: socials?.linkedin.S,
-                      github: socials?.github.S,
-                    }
-                    setSocials(socialObj)
-                  }
-                }
-
-                //socials edit end
-
-                updateUser({
-                  ...data,
-                  socials: socials,
-                  titles: data[0].titles ? data[0].titles.S : "",
-                  links: data[0].links ? data[0].links.S : "",
-                })
-
-                setLoading(false)
-              })
-              .catch((err) => {
-                console.log(err)
-                setLoading(false)
-              })
-          } else {
-            router.push("/login")
-            setLoading(false)
+          if (!cognitoUserSession.isValid()) {
+            throw new Error("Session is Not Valid")
           }
+          const handle = cognitoUserSession.idToken.payload["cognito:username"]
+          setHandle(handle)
+          axios
+            .get(
+              `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${handle}`,
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }
+            )
+            .then((res) => {
+              const data = res.data
+              if (data[0].links.L) {
+                const normalizedArray = dbResponseToArray(data[0].links.L)
+                setReceivedLinks(normalizedArray)
+              }
+              console.log(data[0].socials, "socials in links.js")
+
+              let socialObj
+              if (data[0].socials) {
+                let lengthOfSocialObject = Object.keys(data[0].socials).length
+                console.log(lengthOfSocialObject)
+                if (lengthOfSocialObject > 0) {
+                  const socials = data[0]?.socials
+                  socialObj = {
+                    facebook: socials?.facebook.S,
+                    twitter: socials?.twitter.S,
+                    instagram: socials?.instagram.S,
+                    youtube: socials?.youtube.S,
+                    linkedin: socials?.linkedin.S,
+                    github: socials?.github.S,
+                  }
+                  setSocials(socialObj)
+                }
+              }
+
+              //socials edit end
+
+              updateUser({
+                ...data[0],
+                socials: socialObj,
+                links: receivedLinks,
+              })
+
+              setLoading(false)
+            })
         })
         .catch((err) => {
           router.push("/login")
@@ -397,7 +376,7 @@ const links = () => {
       router.push("/login")
       setLoading(false)
     }
-  }, [])
+  }, [handle])
 
   // don't modify the below function all the below function are of no use currently, I will later remove them or make them functional
 
@@ -425,7 +404,7 @@ const links = () => {
           handle: user?.handle,
           userId: user?.userId ? user.userId : "",
           email: user?.email,
-          socials: user?.socials ? user.socials : {},
+          socials: user?.socials ? socials : {},
           links: convertToJsonString(linksArray),
         }
 
@@ -477,30 +456,26 @@ const links = () => {
     setLinks(updatedLinks)
   }
 
-
   if (loading) {
     return (
       <div className="flex items-center justify-center w-full h-screen">
-      <h1 className="font-semibold text-2xl"> Dude Hang On, let Me load</h1>
+        <h1 className="text-2xl font-semibold"> Dude Hang On, let Me load</h1>
       </div>
     )
   }
 
   return (
     <>
-    {
-      console.log("the current user is", user)
-    }
+      {console.log("the current user is", user)}
       {isModalOpen && user && (
         <AddLinkModal
           isOpen={isModalOpen}
           onClose={closeModal}
           currentUser={user}
-          serverLinks={receivedLinksArray}
-          serverTitles={receivedTitlesArray}
+          serverLinks={receivedLinks}
         />
       )}
-      {console.log("the links converted is ", receivedLinksArray)}
+
       <button
         className="float-right px-2 py-2 bg-gray-200 cursor-pointer"
         onClick={openModal}

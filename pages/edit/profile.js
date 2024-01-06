@@ -21,7 +21,6 @@ const profile = () => {
     isAuthenticated,
   } = useContext(AccountContext)
 
-
   const [loading, setLoading] = useState(true)
   const [handle, setHandle] = useState(null)
   const [data, setData] = useState({})
@@ -30,7 +29,7 @@ const profile = () => {
   const [image, setImage] = useState(
     "https://cdn-icons-png.flaticon.com/128/4140/4140048.png"
   )
-
+  const [receivedLinks, setReceivedLinks] = useState([])
 
   const [socials, setSocials] = useState({
     facebook: "",
@@ -41,6 +40,19 @@ const profile = () => {
     github: "",
   })
 
+  function dbResponseToArray(links) {
+    if (!links || links.length == 0) {
+      return []
+    }
+    const normalizedArray = links.map((link) => {
+      return {
+        title: link.M.title.S,
+        url: link.M.url.S,
+      }
+    })
+    return normalizedArray
+  }
+
   useEffect(() => {
     if (isAuthenticated()) {
       getSession()
@@ -49,6 +61,7 @@ const profile = () => {
             const handle =
               cognitoUserSession.idToken.payload["cognito:username"]
             setHandle(handle)
+
             axios
               .get(
                 `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${handle}`,
@@ -62,9 +75,15 @@ const profile = () => {
                 const response = res.data
                 console.log("received this response from dynamodb: ", response)
 
+                //managing links
+                if (response[0].links.L) {
+                  const normalizedArray = dbResponseToArray(response[0].links.L)
+                  setReceivedLinks(normalizedArray)
+                }
+
                 //// social changes
                 setName(response[0].name)
-                if(response[0].bio){
+                if (response[0].bio) {
                   setBio(response[0].bio)
                 }
                 let socialObj
@@ -90,6 +109,7 @@ const profile = () => {
                 updateUser({
                   ...response[0],
                   socials: socials,
+                  links: receivedLinks,
                 })
 
                 setLoading(false)
@@ -100,20 +120,17 @@ const profile = () => {
               })
           } else {
             router.push("/login")
-
             setLoading(false)
           }
         })
         .catch((err) => {
+          console.log(err)
           router.push("/login")
         })
     } else {
       router.push("/login")
     }
   }, [])
-
-  
- 
 
   function saveProfile(e) {
     e.preventDefault()
@@ -127,8 +144,7 @@ const profile = () => {
           userId: user?.userId,
           email: user?.email,
           socials: user?.socials,
-          links: user?.links ? user.links.S : "",
-          titles: user?.titles ? user.titles.S : "",
+          links: user.links ? user.links : "",
         }
 
         console.log(cognitoUserSession.getIdToken().getJwtToken())
@@ -164,7 +180,7 @@ const profile = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center w-full h-screen">
-       <h1 className="text-2xl font-semibold"> Dude Hang On, let Me load</h1>
+        <h1 className="text-2xl font-semibold"> Dude Hang On, let Me load</h1>
       </div>
     )
   }
