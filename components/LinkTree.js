@@ -6,8 +6,8 @@ import Image from "next/image"
 import { AccountContext } from "@/context/Account"
 
 const LinkTree = (props) => {
-  console.log(props.data[0])
-  const { name, image, handle, bio } = props.data[0]
+  console.log(props.data, "the dat in linktree")
+  const { name, image, handle, bio } = props.data
   // console.log("console statement from LinkTree.js", user.name, user.handle, user.userId)
   return (
     <>

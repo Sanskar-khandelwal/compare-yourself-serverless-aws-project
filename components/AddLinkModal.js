@@ -5,14 +5,20 @@ import axios from "axios"
 import { toast } from "react-toastify"
 import { useRouter } from "next/router"
 import { AccountContext } from "@/context/Account"
-import Link from "next/link"
 
-const AddLinkModal = ({ isOpen, onClose, currentUser, serverLinks }) => {
+const AddLinkModal = ({
+  isOpen,
+  onClose,
+  currentUser,
+  serverLinks,
+  serverSocialsLinks,
+}) => {
   if (serverLinks == "undefined" || !serverLinks) {
     serverLinks = new Array()
   }
-  console.log("the current user is Modal Component", currentUser)
-  console.log("console speaking from dashborad", serverLinks)
+  console.log("the current user is addlinkModal", currentUser)
+  console.log("console speaking from ", serverLinks)
+  console.log("social in addlinkModal", serverSocialsLinks)
 
   const router = useRouter()
   const {
@@ -24,16 +30,8 @@ const AddLinkModal = ({ isOpen, onClose, currentUser, serverLinks }) => {
   } = useContext(AccountContext)
 
   const [link, setLink] = useState({ url: "", title: "" })
-  const [payloadLinks, setPayloadLinks] = useState()
   const [handle, setHandle] = useState(null)
-  const [socials, setSocials] = useState({
-    facebook: "",
-    twitter: "",
-    instagram: "",
-    youtube: "",
-    linkedin: "",
-    github: "",
-  })
+  const [socials, setSocials] = useState({})
 
   function isValidURL(url) {
     try {
@@ -51,28 +49,8 @@ const AddLinkModal = ({ isOpen, onClose, currentUser, serverLinks }) => {
 
     getSession()
       .then((cognitoUserSession) => {
-        //social changes
-        let socialObj
-        if (currentUser.socials) {
-          let lengthOfSocialObject = Object.keys(currentUser.socials).length
-          if (lengthOfSocialObject > 0) {
-            const socials = currentUser?.socials
-            socialObj = {
-              facebook: socials?.facebook.S,
-              twitter: socials?.twitter.S,
-              instagram: socials?.instagram.S,
-              youtube: socials?.youtube.S,
-              linkedin: socials?.linkedin.S,
-              github: socials?.github.S,
-            }
-            setSocials(socialObj)
-          }
-        }
-
         //links
-
         serverLinks.push(link)
-        // social changes end
 
         const payload = {
           name: currentUser.name,
@@ -81,8 +59,8 @@ const AddLinkModal = ({ isOpen, onClose, currentUser, serverLinks }) => {
           handle: currentUser.handle,
           userId: currentUser?.userId ? currentUser.userId : "",
           email: currentUser.email,
-          socials: socials,
-          links: serverLinks ? serverLinks : "",
+          socials: serverSocialsLinks,
+          links: serverLinks ? serverLinks : [],
         }
 
         console.log("the payload is:", payload)
