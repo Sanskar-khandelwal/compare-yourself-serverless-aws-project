@@ -7,10 +7,11 @@ module.exports = {
   ],
   theme: {
     extend: {
-      fontFamily: {
-    
-      }
+      backgroundImage: {
+        "hero-bg": "url('/images/hero-desktop-bg1.png')",
+        "right-arrow": "url('/svg/circle-right-arrow.svg')",
+      },
+    },
+    plugins: [],
   },
-  plugins: [],
-}
 }
