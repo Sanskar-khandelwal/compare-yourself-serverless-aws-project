@@ -333,8 +333,9 @@ const links = () => {
             )
             .then((res) => {
               const data = res.data
+              let normalizedArray
               if (data[0].links.L) {
-                const normalizedArray = dbResponseToArray(data[0].links.L)
+                normalizedArray = dbResponseToArray(data[0].links.L)
                 setReceivedLinks(normalizedArray)
               }
               console.log(data[0].socials, "socials in links.js")
@@ -362,7 +363,7 @@ const links = () => {
               updateUser({
                 ...data[0],
                 socials: socialObj,
-                links: receivedLinks,
+                links: normalizedArray,
               })
 
               setLoading(false)
@@ -473,6 +474,7 @@ const links = () => {
           onClose={closeModal}
           currentUser={user}
           serverLinks={receivedLinks}
+          serverSocialsLinks={user.socials}
         />
       )}
 

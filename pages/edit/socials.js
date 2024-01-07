@@ -61,8 +61,9 @@ const socials = () => {
                 console.log("received this response from dynamodb: ", response)
 
                 //managing links
+                let normalizedArray
                 if (response[0].links.L) {
-                  const normalizedArray = dbResponseToArray(response[0].links.L)
+                  normalizedArray = dbResponseToArray(response[0].links.L)
                   setReceivedLinks(normalizedArray)
                 }
                 let socialObj = {}
@@ -94,7 +95,7 @@ const socials = () => {
                 updateUser({
                   ...response[0],
                   socials: socialObj,
-                  links: receivedLinks,
+                  links: normalizedArray,
                 })
                 setLoading(false)
               })
@@ -134,7 +135,7 @@ const socials = () => {
           handle: user.handle ? user.handle : "",
           userId: user.userId ? user.userId : "",
           email: user.email,
-          links: user.links ? user.links.S : "",
+          links: receivedLinks,
           socials: socials,
         }
         console.log(" the payload is", payload)

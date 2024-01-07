@@ -57,75 +57,70 @@ const profile = () => {
     if (isAuthenticated()) {
       getSession()
         .then((cognitoUserSession) => {
-          if (cognitoUserSession.isValid()) {
-            const handle =
-              cognitoUserSession.idToken.payload["cognito:username"]
-            setHandle(handle)
-
-            axios
-              .get(
-                `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${handle}`,
-                {
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                }
-              )
-              .then((res) => {
-                const response = res.data
-                console.log("received this response from dynamodb: ", response)
-
-                //managing links
-                if (response[0].links.L) {
-                  const normalizedArray = dbResponseToArray(response[0].links.L)
-                  setReceivedLinks(normalizedArray)
-                }
-
-                //// social changes
-                setName(response[0].name)
-                if (response[0].bio) {
-                  setBio(response[0].bio)
-                }
-                let socialObj
-                if (response[0].socials) {
-                  let lengthOfSocialObject = Object.keys(
-                    response[0].socials
-                  ).length
-                  if (lengthOfSocialObject > 0) {
-                    const socials = response[0]?.socials
-                    socialObj = {
-                      facebook: socials?.facebook.S,
-                      twitter: socials?.twitter.S,
-                      instagram: socials?.instagram.S,
-                      youtube: socials?.youtube.S,
-                      linkedin: socials?.linkedin.S,
-                      github: socials?.github.S,
-                    }
-                    setSocials(socialObj)
-                  }
-                }
-                setData(response[0])
-
-                updateUser({
-                  ...response[0],
-                  socials: socials,
-                  links: receivedLinks,
-                })
-
-                setLoading(false)
-              })
-              .catch((err) => {
-                console.log(err)
-                setLoading(false)
-              })
-          } else {
-            router.push("/login")
-            setLoading(false)
+          if (!cognitoUserSession.isValid()) {
+            throw new Error("Session is Not Valid")
           }
+          const handle = cognitoUserSession.idToken.payload["cognito:username"]
+          setHandle(handle)
+
+          axios
+            .get(
+              `https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself/${handle}`,
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }
+            )
+            .then((res) => {
+              const response = res.data
+              console.log("received this response from dynamodb: ", response)
+
+              //managing links
+              let normalizedArray
+              if (response[0].links.L) {
+                normalizedArray = dbResponseToArray(response[0].links.L)
+                setReceivedLinks(normalizedArray)
+              }
+
+              //// social changes
+              setName(response[0].name)
+              if (response[0].bio) {
+                setBio(response[0].bio)
+              }
+              let socialObj
+              if (response[0].socials) {
+                let lengthOfSocialObject = Object.keys(
+                  response[0].socials
+                ).length
+                if (lengthOfSocialObject > 0) {
+                  const socials = response[0]?.socials
+                  socialObj = {
+                    facebook: socials?.facebook.S,
+                    twitter: socials?.twitter.S,
+                    instagram: socials?.instagram.S,
+                    youtube: socials?.youtube.S,
+                    linkedin: socials?.linkedin.S,
+                    github: socials?.github.S,
+                  }
+                  setSocials(socialObj)
+                }
+              }
+              setData(response[0])
+
+              updateUser({
+                ...response[0],
+                socials: socials,
+                links: normalizedArray,
+              })
+
+              setLoading(false)
+            })
         })
         .catch((err) => {
           console.log(err)
           router.push("/login")
+          setLoading(false)
         })
     } else {
       router.push("/login")
@@ -143,8 +138,8 @@ const profile = () => {
           handle: user?.handle,
           userId: user?.userId,
           email: user?.email,
-          socials: user?.socials,
-          links: user.links ? user.links : "",
+          socials: socials,
+          links: receivedLinks,
         }
 
         console.log(cognitoUserSession.getIdToken().getJwtToken())
