@@ -11,6 +11,9 @@ module.exports = {
         "hero-bg": "url('/images/hero-desktop-bg1.png')",
         "right-arrow": "url('/svg/circle-right-arrow.svg')",
       },
+      fontFamily: {
+        poppins: ["Poppins", "sans-serif"],
+      },
     },
     plugins: [],
   },
