@@ -128,8 +128,13 @@ export default function Handle() {
           ))}
         </div>
       </div>
-      <div className="absolute px-2 py-2 mx-auto text-white bottom-5">
-        Claim Your Link
+      <div className="absolute bottom-0 flex justify-center w-full ">
+        <a
+          href="/apply"
+          className="mx-auto backdrop-filter backdrop-blur-[100px] bg-white/5 button blue"
+        >
+          <span className="text-white font-poppins">Claim Your Link</span>
+        </a>
       </div>
     </div>
   )
