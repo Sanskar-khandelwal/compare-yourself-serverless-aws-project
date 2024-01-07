@@ -13,12 +13,12 @@ const ShareButton = () => {
   }
   return (
     <>
-      <div 
-        className="absolute cursor-pointer top-2 left-2"
+      <div
+        className="absolute cursor-pointer top-10 left-10"
         onClick={copyLink}
       >
         <Image
-          className="bg-white w-12 h-12 rounded-full p-2 hover:bg-zinc-100 transition-all duration-500 hover:scale-105 hover:border hover:border-gray-30 mx-1 select-none"
+          className="w-12 h-12 p-2 mx-1 transition-all duration-500 rounded-full select-none hover:bg-zinc-100 hover:scale-105 hover:border hover:border-gray-30"
           src="/svg/share.svg"
           width={20}
           height={20}

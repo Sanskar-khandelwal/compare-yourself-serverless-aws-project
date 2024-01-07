@@ -1,29 +1,25 @@
 import React from "react"
 import Link from "next/link"
 import { useRouter } from "next/router"
-
-const LinkTreeCard = ({url, title}) => {
- 
+import { IoMdArrowRoundForward } from "react-icons/io"
+const LinkTreeCard = ({ url, title }) => {
   const router = useRouter()
   return (
     <>
-      <div className="w-full mt-5  mx-auto">
-        {/* <Link
-          href={data.url}
-          className="flex items-center p-2 rounded-xl  text-white bg-gray-100 border hover:bg-gray-100 mb-3 mx-3 hover:-translate-y-1 transition-all duration-500"
-        > */}
-        
-        <Link href={url}
-        
-          target="_black"
-          className="flex items-center p-2 rounded-xl  text-white hover:bg-gray-100 mb-3 mx-3 hover:-translate-y-1 transition-all duration-500  backdrop-filter backdrop-blur-3xl bg-opacity-60 border border-gray-200"
+      <div className="relative flex items-center justify-center p-2 mt-4 text-white transition-all ease-linear rounded-[10px] border border-[#f9f6f6] border-solid bg-opacity-5 backdrop-filter backdrop-blur-[400px] hover:bg-white/5 hover:border-white hover:-translate-y-1 group">
+        <div
+          className="absolute p-1 bg-white rounded-full hover:bg-gray-700 w-11 left-2"
+          alt=""
+        />
+        <div
+          className="absolute transition-all duration-200 ease-linear right-5 group-hover:-rotate-45"
+          alt=""
         >
-          <div
-            className="bg-black hover:bg-gray-700 rounded-full p-1 w-11 mr-5"
-            
-            alt=""
-          />
-          <h4 className="md:text-lg text-black text-center mx-auto text-Poppins">{title}</h4>
+          <IoMdArrowRoundForward />
+        </div>
+
+        <Link href={url} target="_black" className="bg-">
+          <h4 className="mx-auto">{title}</h4>
         </Link>
       </div>
     </>

@@ -12,7 +12,7 @@ const LinkTree = (props) => {
   return (
     <>
       <section className="mx-auto">
-        <div className="flex flex-col items-center mt-5">
+        <div className="flex flex-col items-center">
           <Image
             className="object-cover w-32 h-32 mt-2 rounded-full left-1/2 -tranlate-x-1/2"
             src={image ? image : ""}
@@ -20,12 +20,16 @@ const LinkTree = (props) => {
             height={100}
             alt=""
           />
-          <h2 className="w-9/12 px-16 mx-auto mt-4 text-lg font-semibold text-center font-Poppins">
+          <h2 className="w-9/12 px-16 mx-auto mt-4 text-lg font-semibold text-center">
             {name ? name : "No Username"}
           </h2>
         </div>
 
-        <p className="mt-4 text-center ">{bio}</p>
+        <p className="mt-1 text-center ">
+          {
+            "Haan meri jaan me to badiya hu tu kesi he sab badiya chal raha he na tujhe koi dikkat to nahi hori he "
+          }
+        </p>
       </section>
     </>
   )
