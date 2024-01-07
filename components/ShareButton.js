@@ -18,7 +18,7 @@ const ShareButton = () => {
         onClick={copyLink}
       >
         <Image
-          className="w-12 h-12 p-2 mx-1 transition-all duration-500 rounded-full select-none hover:bg-zinc-100 hover:scale-105 hover:border hover:border-gray-30"
+          className="w-12 h-12 p-2 mx-1 transition-all duration-500 rounded-full select-none hover:scale-105 hover:border-gray-30"
           src="/svg/share.svg"
           width={20}
           height={20}

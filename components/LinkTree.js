@@ -20,7 +20,7 @@ const LinkTree = (props) => {
             height={100}
             alt=""
           />
-          <h2 className="w-9/12 px-16 mx-auto mt-4 text-lg font-semibold text-center">
+          <h2 className="w-9/12 px-16 mx-auto mt-4 text-lg font-semibold text-center font-poppins">
             {name ? name : "No Username"}
           </h2>
         </div>
