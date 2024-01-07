@@ -118,17 +118,14 @@ export default function Handle() {
     <>
       <div className="relative max-w-3xl mx-auto mt-10 bg-white/95 rounded-2xl">
         <ShareButton />
-        {/* {user && <LinkTree data={data} />}
+        {console.log("usrer in jsx", user)}
+        {user && <LinkTree data={user} />}
         <SocialTree socials={socials} />
         <div className="mt-10">
-          {receivedLinksArray.map((url, index) => (
-            <LinkTreeCard
-              key={index}
-              url={url}
-              title={receivedTitlesArray[index]}
-            /> */}
-        {/* ))} */}
-        {/* </div> */}
+          {receivedLinks.map((linkObj, index) => (
+            <LinkTreeCard key={index} url={linkObj.url} title={linkObj.title} />
+          ))}
+        </div>
       </div>
     </>
   )
