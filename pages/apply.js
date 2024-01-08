@@ -29,9 +29,6 @@ const Apply = () => {
   const { authenticate, updateUser, getSession } = useContext(AccountContext)
   const [visible, setVisible] = useState(false)
 
-  const handleCategoryChange = (e) => {
-    setCategory(e.target.value)
-  }
   const handleRegister = (e) => {
     e.preventDefault()
     ///
@@ -111,7 +108,9 @@ const Apply = () => {
                     }
                     console.log("confirmation data axios", data)
                     updateUser(payload)
+
                     router.push("/dashboard")
+                    localStorage.setItem("firstVist", "true")
                     toast.success("Profile saved Successfully")
                   })
                   .catch((e) => {
