@@ -25,11 +25,7 @@ const LinkTree = (props) => {
           </h2>
         </div>
 
-        <p className="mt-1 text-center ">
-          {
-            "Haan meri jaan me to badiya hu tu kesi he sab badiya chal raha he na tujhe koi dikkat to nahi hori he "
-          }
-        </p>
+        <p className="mt-1 text-center ">{bio}</p>
       </section>
     </>
   )
