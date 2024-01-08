@@ -11,70 +11,67 @@ import {
 export const AccountContext = createContext()
 
 export const Account = (props) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null)
   const router = useRouter()
 
   const updateUser = (newUser) => {
-    setUser(newUser);
-  };
+    setUser(newUser)
+  }
 
-  const getAuthenticatedUser =  ()=>{
- 
-        const user = Pool.getCurrentUser();
-        return user;
+  const getAuthenticatedUser = () => {
+    const user = Pool.getCurrentUser()
+    return user
   }
 
   const isAuthenticated = async () => {
-    const user =  getAuthenticatedUser();
+    const user = getAuthenticatedUser()
 
     if (!user) {
-      return false;
+      return false
     }
 
     try {
-      const session = await getSession();
+      const session = await getSession()
       return session.isValid()
     } catch (error) {
-      console.error("Error checking authentication:", error);
-      return false;
+      console.error("Error checking authentication:", error)
+      return false
     }
-  };
+  }
 
-
-  const getSession = async()=> {
+  const getSession = async () => {
     return await new Promise((resolve, reject) => {
-      const user = Pool.getCurrentUser();
-      if(user){
-        user.getSession((err, session)=> {
-          if(err){
+      const user = Pool.getCurrentUser()
+      if (user) {
+        user.getSession((err, session) => {
+          if (err) {
             reject(err)
-            return;
+            return
           }
-         if(session.isValid()){
-          resolve(session)
-          return session;
-         }
-         
-          reject(err);
-          return;
+          if (session.isValid()) {
+            resolve(session)
+            return session
+          }
+
+          reject(err)
+          return
         })
-      }else{
+      } else {
         reject()
       }
     })
   }
 
-
   const getJwtToken = async () => {
     try {
-      const session = await getSession();
-      const jwtToken = session.getAccessToken().getJwtToken();
-      return jwtToken;
+      const session = await getSession()
+      const jwtToken = session.getAccessToken().getJwtToken()
+      return jwtToken
     } catch (error) {
-      console.error("Error getting JWT token:", error);
-      throw error;
+      console.error("Error getting JWT token:", error)
+      throw error
     }
-  };
+  }
   const authenticate = async (Username, Password) => {
     console.log(Username, Password)
     return await new Promise((resolve, reject) => {
@@ -94,11 +91,11 @@ export const Account = (props) => {
           console.log("onSuccess:", result)
           resolve(result)
         },
-        onFailure : (err) => {
+        onFailure: (err) => {
           console.error("onFailure:", err)
           reject(err)
         },
-        newPasswordRequired:(result) => {
+        newPasswordRequired: (result) => {
           console.log("newPasswordRequired:", result)
           resolve(result)
         },
@@ -106,19 +103,28 @@ export const Account = (props) => {
     })
   }
   const logout = () => {
-    const user = Pool.getCurrentUser();
+    const user = Pool.getCurrentUser()
     if (user) {
-      user.signOut();
       router.push("/login")
-      setUser(null);
+      user.signOut()
+      setUser(null)
     }
-  };
-  
+  }
+
   return (
-    <AccountContext.Provider value={{ authenticate, getSession,getJwtToken, user, updateUser , logout, getAuthenticatedUser , isAuthenticated}}>
+    <AccountContext.Provider
+      value={{
+        authenticate,
+        getSession,
+        getJwtToken,
+        user,
+        updateUser,
+        logout,
+        getAuthenticatedUser,
+        isAuthenticated,
+      }}
+    >
       {props.children}
     </AccountContext.Provider>
   )
 }
-
-
