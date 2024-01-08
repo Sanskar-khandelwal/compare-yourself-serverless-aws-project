@@ -115,25 +115,30 @@ export default function Handle() {
   }
 
   return (
-    <div className="min-h-screen bg-hero-bg">
+    <div className="h-screen min-h-screen overflow-y-auto bg-hero-bg">
       <div className="relative max-w-2xl pt-16 mx-auto text-white">
         <ShareButton />
         {user && <LinkTree data={user} />}
-        <div className="mt-4">
+        <div className="mt-10">
           <SocialTree socials={socials} />
         </div>
-        <div className="max-w-xl mx-auto mt-5">
+        <div className="max-w-xl mx-auto mt-10">
           {receivedLinks.map((linkObj, index) => (
-            <LinkTreeCard key={index} url={linkObj.url} title={linkObj.title} />
+            <LinkTreeCard
+              key={index}
+              url={linkObj.url}
+              title={linkObj.title}
+              from={"home"}
+            />
           ))}
         </div>
       </div>
-      <div className="absolute bottom-0 flex justify-center w-full ">
+      <div className="fixed bottom-0 flex justify-center w-full mx-auto mt-auto">
         <a
           href="/apply"
           className="mx-auto backdrop-filter backdrop-blur-[100px] bg-white/5 button blue"
         >
-          <span className="text-white font-poppins">Claim Your Link</span>
+          <span className="text-white font-poppins">Claim My Link</span>
         </a>
       </div>
     </div>

@@ -9,11 +9,13 @@ import { AccountContext } from "@/context/Account"
 import { CognitoUserSession } from "amazon-cognito-identity-js"
 import { useRouter } from "next/router"
 import useSWR from "swr"
-import Confetti from "react-confetti"
+import confetti from "canvas-confetti"
 
 const dashboard = () => {
   const [data, setData] = useState(null)
   const [showConfetti, setShowConfetti] = useState(true)
+  const [lengthOfSocialObject, setLengthOfSocialObject] = useState(0)
+  const [lengthOfLinks, setLengthOfLinks] = useState(0)
   const router = useRouter()
   const {
     getSession,
@@ -28,17 +30,16 @@ const dashboard = () => {
     setShowConfetti(false)
   }
 
-  // for react confetti
-
-  // useEffect(() => {
-  //   // After 3 seconds, update the state to false
-  //   const timeoutId = setTimeout(() => {
-  //     setShowConfetti(false)
-  //   }, 8000)
-
-  //   // Clear the timeout to prevent updating state after component unmounts
-  //   return () => clearTimeout(timeoutId)
-  // }, []) //
+  useEffect(() => {
+    if (localStorage.getItem("firstVisit")) {
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+      })
+      localStorage.removeItem("firstVisit")
+    }
+  }, [])
 
   useEffect(() => {
     if (isAuthenticated()) {
@@ -70,6 +71,10 @@ const dashboard = () => {
                   github: socials?.github.S,
                 }
                 console.log("This is the social obj", socialObj)
+                const length = calculateSocialsLength(socialObj)
+                setLengthOfSocialObject(length)
+
+                setLengthOfLinks(response[0]?.links?.L?.length)
                 setData(response[0])
                 updateUser({
                   ...response[0],
@@ -77,21 +82,13 @@ const dashboard = () => {
                 })
                 setLoading(false)
               })
-              .catch((err) => {
-                if ((err.message = "Network Error")) {
-                  console.log(
-                    "Message from social Verse: Network Issue detected"
-                  )
-                }
-                setLoading(false)
-                console.log(err)
-              })
           } else {
             router.push("/login")
             setLoading(false)
           }
         })
         .catch((err) => {
+          console.log(err)
           router.push("/login")
           setLoading(false)
         })
@@ -102,6 +99,18 @@ const dashboard = () => {
   }, [])
 
   console.log("user recevied in dashboard", user)
+
+  function calculateSocialsLength(myObject) {
+    let validPairs = 0
+
+    for (const key in myObject) {
+      if (myObject[key] !== undefined) {
+        validPairs++
+      }
+    }
+
+    return validPairs
+  }
 
   if (loading) {
     return (
@@ -115,18 +124,20 @@ const dashboard = () => {
       <div>
         {handle && <UserHeader handle={handle} />}
         <main className="flex justify-between max-w-5xl mx-auto mt-12 rounded-md text-poppins">
-          {console.log(data, "this is the data")}
           {data && (
             <section className="flex-1 w-full px-4 border border-gray-100">
               <div className="flex justify-between w-full py-1 mt-1 border-b border-gray-200">
                 <p className="font-medium "> Name </p>
-                {user.name ? (
+                {user?.name ? (
                   <button className="w-20 py-1 text-sm text-center text-green-800 rounded-md bg-green-300/50">
                     {" "}
                     Added{" "}
                   </button>
                 ) : (
-                  <button className="w-20 py-1 text-sm text-center text-red-800 rounded-md bg-red-200/50">
+                  <button
+                    className="w-20 py-1 text-sm text-center text-red-800 rounded-md bg-red-200/50"
+                    onClick={() => router.push("/profile")}
+                  >
                     {" "}
                     Add now{" "}
                   </button>
@@ -140,7 +151,10 @@ const dashboard = () => {
                     Added{" "}
                   </button>
                 ) : (
-                  <button className="w-20 py-1 text-sm text-center text-red-800 rounded-md bg-red-200/50">
+                  <button
+                    className="w-20 py-1 text-sm text-center text-red-800 rounded-md bg-red-200/50"
+                    onClick={() => router.push("/edit/profile")}
+                  >
                     {" "}
                     Add now{" "}
                   </button>
@@ -154,7 +168,10 @@ const dashboard = () => {
                     Added{" "}
                   </button>
                 ) : (
-                  <button className="w-20 py-1 text-sm text-center text-red-800 rounded-md bg-red-200/50">
+                  <button
+                    className="w-20 py-1 text-sm text-center text-red-800 rounded-md bg-red-200/50"
+                    onClick={() => router.push("/edit/profile")}
+                  >
                     {" "}
                     Add now{" "}
                   </button>
@@ -162,13 +179,45 @@ const dashboard = () => {
               </div>
               <div className="flex justify-between w-full py-1 mt-1 border-b border-gray-200">
                 <p className="font-medium">Socials </p>
-                {user?.socials ? (
-                  <button className="w-20 py-1 text-sm text-center text-green-800 rounded-md bg-green-300/50">
-                    {" "}
-                    Added{" "}
-                  </button>
+                {lengthOfSocialObject > 0 ? (
+                  <div className="flex items-center">
+                    <span className="rounded-full text-white w-8 h-8 mr-2 bg-black flex items-center justify-center">
+                      {lengthOfSocialObject}
+                    </span>
+
+                    <button className="w-20 py-1 text-sm text-center text-green-800 rounded-md bg-green-300/50">
+                      {" "}
+                      Added{" "}
+                    </button>
+                  </div>
                 ) : (
-                  <button className="w-20 py-1 text-sm text-center text-red-800 rounded-md bg-red-200/50">
+                  <button
+                    className="w-20 py-1 text-sm text-center text-red-800 rounded-md bg-red-200/50"
+                    onClick={() => router.push("/edit/socials")}
+                  >
+                    {" "}
+                    Add now{" "}
+                  </button>
+                )}
+              </div>
+              <div className="flex justify-between w-full py-1 mt-1 border-b border-gray-200">
+                <p className="font-medium">Links</p>
+                {lengthOfLinks > 0 ? (
+                  <div className="flex items-center">
+                    <span className="rounded-full text-white w-8 h-8 mr-2 bg-black flex items-center justify-center">
+                      {lengthOfLinks}
+                    </span>
+
+                    <button className="w-20 py-1 text-sm text-center text-green-800 rounded-md bg-green-300/50">
+                      {" "}
+                      Added{" "}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    className="w-20 py-1 text-sm text-center text-red-800 rounded-md bg-red-200/50"
+                    onClick={() => router.push("/edit/links")}
+                  >
                     {" "}
                     Add now{" "}
                   </button>

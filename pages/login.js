@@ -222,7 +222,7 @@ const Login = () => {
                 />
               </form>
               <h4 className="pt-3 text-left text-black ">
-                New here ?{" "}
+                New to SocialVerse ?{" "}
                 <Link className="font-bold text-indigo-500 " href="/apply">
                   Apply Now
                 </Link>

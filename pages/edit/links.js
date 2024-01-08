@@ -266,6 +266,10 @@ import { AccountContext } from "@/context/Account"
 import { useRouter } from "next/router"
 import { toast } from "react-toastify"
 import AddLinkModal from "@/components/AddLinkModal"
+import LinkTreeCard from "@/components/LinkTreeCard"
+import LinkTreeCardDelete from "@/components/LinkTreeCardDelete"
+import Link from "next/link"
+import { IoMdArrowRoundForward } from "react-icons/io"
 
 const links = () => {
   const router = useRouter()
@@ -283,6 +287,7 @@ const links = () => {
   const [handle, setHandle] = useState(null)
   const [currentUser, setCurrentUser] = useState(null)
   const [isModalOpen, setModalOpen] = useState(false)
+  const [selectedLinks, setSelectedLinks] = useState([])
   const [socials, setSocials] = useState({
     facebook: "",
     twitter: "",
@@ -379,39 +384,54 @@ const links = () => {
     }
   }, [handle])
 
-  // don't modify the below function all the below function are of no use currently, I will later remove them or make them functional
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        <h1 className="text-2xl font-semibold"> Dude Hang On, let Me load</h1>
+      </div>
+    )
+  }
 
-  function saveLinks(e) {
+  function handleRemoveLinks(index) {
+    // Check if the link is already in the selectedLinks array
+    const isSelected = selectedLinks.includes(index)
+
+    // If it's not selected, add it to the selectedLinks array
+    if (!isSelected) {
+      setSelectedLinks((prev) => [...prev, index])
+    } else {
+      // If it's already selected, remove it from the selectedLinks array
+      setSelectedLinks((prev) => prev.filter((i) => i !== index))
+    }
+  }
+
+  function handleDeleteSelectedLinks(e) {
     e.preventDefault()
+    if (selectedLinks.length == 0) {
+      toast.error("No Links Selected to Delete! ")
+      return
+    }
+    const newLinksArray = receivedLinks.filter((el, index) => {
+      if (!selectedLinks.includes(index)) {
+        return receivedLinks[index]
+      }
+      setReceivedLinks(newLinksArray)
+    })
+    console.log(newLinksArray)
 
     getSession()
       .then((cognitoUserSession) => {
-        const linksArray = Object.values(links)
-        console.log("the links array", linksArray)
-
-        function convertToJsonString(data) {
-          // Convert the array to a JSON string with removed double quotes
-          const jsonString = JSON.stringify(data)
-            .replace(/\"([^(\")"]+)\":/g, "$1:")
-            .replace(/"/g, "")
-
-          return jsonString
-        }
-
         const payload = {
-          name: user?.name,
-          bio: user?.bio ? user.bio : "",
-          image: user?.image ? user.image : "",
-          handle: user?.handle,
-          userId: user?.userId ? user.userId : "",
-          email: user?.email,
-          socials: user?.socials ? socials : {},
-          links: convertToJsonString(linksArray),
+          name: user.name,
+          bio: user.bio ? user.bio : "",
+          image: user.image ? user.image : "",
+          handle: user.handle ? user.handle : "",
+          userId: user.userId ? user.userId : "",
+          email: user.email,
+          links: newLinksArray,
+          socials: socials,
         }
-
-        console.log(payload, "in links.js")
-
-        updateUser({ ...payload, links: linksArray })
+        console.log(" the payload is", payload)
         axios
           .post(
             "https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself",
@@ -425,14 +445,11 @@ const links = () => {
           )
           .then((res) => {
             const data = res
-            console.log("console statement from links.js", data)
-
+            console.log("console statement from socials.js", data)
+            updateUser(payload)
             if (data.status == "error") return toast.error(data.error)
-            toast.success("Links saved Successfully")
-          })
-          .catch((e) => {
-            console.log(e)
-            toast.error(e.message)
+            toast.success("Profile saved Successfully")
+            router.reload()
           })
       })
       .catch((error) => {
@@ -441,32 +458,9 @@ const links = () => {
       })
   }
 
-  function handleLinkChange(index, field, value) {
-    const updatedLinks = [...links]
-    const linkToUpdate = { ...updatedLinks[index], [field]: value }
-    updatedLinks[index] = linkToUpdate
-    setLinks(updatedLinks)
-  }
-
-  function handleAddLink() {
-    setLinks([...links, { url: "", title: "" }])
-  }
-  function handleRemoveLinks(index) {
-    const updatedLinks = [...links]
-    updatedLinks.splice(index, 1)
-    setLinks(updatedLinks)
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center w-full h-screen">
-        <h1 className="text-2xl font-semibold"> Dude Hang On, let Me load</h1>
-      </div>
-    )
-  }
-
   return (
-    <>
+    <div className="max-w-5xl mx-auto">
+      <UserHeader handle={handle} />
       {console.log("the current user is", user)}
       {isModalOpen && user && (
         <AddLinkModal
@@ -477,79 +471,69 @@ const links = () => {
           serverSocialsLinks={user.socials}
         />
       )}
-
-      <button
-        className="float-right px-2 py-2 bg-gray-200 cursor-pointer"
-        onClick={openModal}
-      >
-        Add Link
-      </button>
       <div>
-        <UserHeader handle={handle} />
-        <main className="mt-4">
-          <section>
-            <h1 className="text-xl font-bold text-center text-gray-800">
-              Customize links 🔗
+        <button
+          className="float-right px-2 py-2 bg-gray-200 cursor-pointer mr-5"
+          onClick={openModal}
+        >
+          Add Link
+        </button>
+        {receivedLinks && (
+          <div className="w-4/5 px-5 md:px-0  mt-10  ">
+            <h1 className="text-2xl font-poppins">
+              {" "}
+              Select Box to Delete Links
             </h1>
-            <div>
-              <form onSubmit={saveLinks}>
-                {links.map((link, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between max-w-5xl mx-auto mt-4 "
-                  >
-                    <label>
-                      <input
-                        className="p-1 px-2 text-xl text-gray-600 align-baseline border-2 rounded-md shadow outline-none font"
-                        type="text"
-                        placeholder="Enter Title"
-                        value={link.title}
-                        onChange={(e) =>
-                          handleLinkChange(index, "title", e.target.value)
-                        }
+            {receivedLinks.map((linkObj, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between w-full  mt-5"
+              >
+                <div className="col-span-2 w-[80%]">
+                  <Link href={linkObj.url} target="_black">
+                    <div className="relative  flex items-center justify-center p-2  bg-white/5 transition-all ease-linear rounded-[10px] border border-[#f9f6f6] border-solid  backdrop-filter backdrop-blur-[400px]  hover:border-white hover:-translate-y-1 group bg-white shadow-md  text-black">
+                      <div
+                        className="absolute p-1 bg-black rounded-full hover:bg-gray-700 w-11 left-2"
+                        alt=""
                       />
-                    </label>
-                    <label>
-                      <input
-                        className="p-1 px-2 text-xl text-gray-600 border-2 rounded-md shadow outline-none font"
-                        type="text"
-                        placeholder="Enter Url"
-                        value={link.url}
-                        onChange={(e) =>
-                          handleLinkChange(index, "url", e.target.value)
-                        }
-                      />
-                    </label>
-                    <img
-                      src="/svg/addition.svg"
-                      className="cursor-pointer w-7 h-7"
-                      type="button"
-                      onClick={(e) => handleAddLink(index)}
-                      alt="icon to delete link"
-                    />
-                    <img
-                      src="/svg/delete.svg"
-                      className="cursor-pointer w-9 h-9"
-                      type="button"
-                      onClick={(e) => handleRemoveLinks(index)}
-                      alt="icon to delete link"
-                    />
-                  </div>
-                ))}
+                      <div
+                        className="absolute transition-all duration-200 ease-linear right-5 group-hover:-rotate-45"
+                        alt=""
+                      >
+                        <IoMdArrowRoundForward />
+                      </div>
 
-                <button
-                  className="bg-[#19c37d] text-white px-4 py-2 rounded-md block  mx-auto mt-4"
-                  type="submit"
+                      <h4 className="mx-auto">{linkObj.title}</h4>
+                    </div>
+                  </Link>
+                </div>
+                <div
+                  className="w-5 h-5 fill-none border-2 mx-auto border-black rounded-full flex items-center justify-center hover:scale-105 group transition-all duration-300 ease-linear"
+                  onClick={() => handleRemoveLinks(index)}
                 >
-                  {" "}
-                  Save links
-                </button>
-              </form>
+                  <div
+                    className={`w-3 h-3 rounded-full hover:scale-105  transition-all duration-300 ease-linear ${
+                      selectedLinks.includes(index)
+                        ? "bg-red-500"
+                        : "bg-white/5"
+                    }`}
+                  ></div>
+                </div>
+              </div>
+            ))}
+            <div className="w-full mx-auto  mt-10 flex justify-center">
+              <button
+                className={`bg-red-500 px-2 py-2 cursor-pointer mx-auto border-2 text-white`}
+                onClick={handleDeleteSelectedLinks}
+              >
+                Delete {selectedLinks.length > 0 ? selectedLinks.length : ""}{" "}
+                Selected Links
+              </button>
             </div>
-          </section>
-        </main>
+          </div>
+        )}
       </div>
-    </>
+    </div>
   )
 }
 
