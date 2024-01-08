@@ -5,6 +5,7 @@ import axios from "axios"
 import { toast } from "react-toastify"
 import { useRouter } from "next/router"
 import { AccountContext } from "@/context/Account"
+import { RxCross2 } from "react-icons/rx"
 
 const AddLinkModal = ({
   isOpen,
@@ -101,20 +102,20 @@ const AddLinkModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center w-full h-screen p-2 overflow-x-hidden overflow-y-auto border outline-none backdrop-blur-lg focus:outline-none">
-      <form
-        onSubmit={saveLinks}
-        className="relative border border-red-800 w-[400px]"
-      >
-        <div className="absolute cursor-pointer right-1" onClick={onClose}>
-          {" "}
-          x
-        </div>
-
-        <div className="flex flex-col items-center w-full py-10 mx-auto bg-gray-200 rounded-xl ">
-          <label>
+    <div className="fixed inset-0 z-50 flex items-center justify-center h-screen  overflow-x-hidden overflow-y-auto border outline-none backdrop-blur-lg focus:outline-none bg-black/20">
+      <form onSubmit={saveLinks} className="border  bg-white w-[40%]">
+        <div className="w-full px-10 ">
+          <div className="flex w-full justify-between py-5">
+            <div className="text-xl font-poppins"> Add</div>
+            <span className=" cursor-pointer text-xl" onClick={onClose}>
+              {" "}
+              <RxCross2 />
+            </span>
+          </div>
+          <span className="w-full border border-gray-100"></span>
+          <label className="mt-10">
             <input
-              className="p-1 px-2 text-xl text-gray-600 align-baseline border-2 rounded-md shadow outline-none font"
+              className=" text-xl text-gray-600 align-baseline border rounded-md shadow outline-none w-full py-2 font-poppins px-2"
               type="text"
               placeholder="Enter Title"
               name="title"
@@ -124,7 +125,7 @@ const AddLinkModal = ({
           </label>
           <label>
             <input
-              className="p-1 px-2 mt-5 text-xl text-gray-600 border-2 rounded-md shadow outline-none font"
+              className="  py-2 px-2 font-poppins text-xl text-gray-600 rounded-md shadow outline-none w-full  mt-7"
               type="text"
               name="url"
               placeholder="Enter Url"
@@ -132,14 +133,15 @@ const AddLinkModal = ({
               onChange={HandleLink}
             />
           </label>
-          <button
-            className="bg-[#19c37d] mt-5 text-white px-4 py-2 rounded-md block  mx-auto "
-            type="submit"
-          >
-            {" "}
-            Save links
-          </button>
         </div>
+
+        <button
+          className="bg-[#19c37d]  w-full text-white px-4 py-2 mt-10 block  mx-auto "
+          type="submit"
+        >
+          {" "}
+          Save links
+        </button>
       </form>
     </div>
   )
