@@ -11,6 +11,7 @@
   "dependencies": {
     "amazon-cognito-identity-js": "^6.3.7",
     "axios": "^1.4.0",
+    "canvas-confetti": "^1.9.2",
     "eslint": "8.37.0",
     "eslint-config-next": "13.2.4",
     "framer-motion": "^10.12.16",
