@@ -42,6 +42,7 @@ const AddLinkModal = ({
       return false
     }
   }
+
   function saveLinks(e) {
     e.preventDefault()
     if (!isValidURL(link.url)) {
@@ -102,12 +103,12 @@ const AddLinkModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center h-screen  overflow-x-hidden overflow-y-auto border outline-none backdrop-blur-lg focus:outline-none bg-black/20">
+    <div className="fixed inset-0 z-50 flex items-center justify-center h-screen overflow-x-hidden overflow-y-auto border outline-none backdrop-blur-lg focus:outline-none bg-black/20">
       <form onSubmit={saveLinks} className="border  bg-white w-[40%]">
         <div className="w-full px-10 ">
-          <div className="flex w-full justify-between py-5">
+          <div className="flex justify-between w-full py-5">
             <div className="text-xl font-poppins"> Add</div>
-            <span className=" cursor-pointer text-xl" onClick={onClose}>
+            <span className="text-xl cursor-pointer " onClick={onClose}>
               {" "}
               <RxCross2 />
             </span>
@@ -115,22 +116,24 @@ const AddLinkModal = ({
           <span className="w-full border border-gray-100"></span>
           <label className="mt-10">
             <input
-              className=" text-xl text-gray-600 align-baseline border rounded-md shadow outline-none w-full py-2 font-poppins px-2"
+              className="w-full px-2 py-2 text-xl text-gray-600 align-baseline border rounded-md shadow outline-none  font-poppins"
               type="text"
               placeholder="Enter Title"
               name="title"
               value={link.title}
               onChange={HandleLink}
+              required
             />
           </label>
           <label>
             <input
-              className="  py-2 px-2 font-poppins text-xl text-gray-600 rounded-md shadow outline-none w-full  mt-7"
+              className="w-full px-2 py-2 text-xl text-gray-600 rounded-md shadow outline-none  font-poppins mt-7"
               type="text"
               name="url"
               placeholder="Enter Url"
               value={link.url}
               onChange={HandleLink}
+              required
             />
           </label>
         </div>
