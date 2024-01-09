@@ -473,13 +473,13 @@ const links = () => {
       )}
       <div>
         <button
-          className="float-right px-2 py-2 bg-gray-200 cursor-pointer mr-5"
+          className="float-right px-2 py-2 mr-5 bg-gray-200 cursor-pointer"
           onClick={openModal}
         >
-          Add Link
+          Add New Link
         </button>
         {receivedLinks && (
-          <div className="w-4/5 px-5 md:px-0  mt-10  ">
+          <div className="w-4/5 px-5 mt-10 md:px-0 ">
             <h1 className="text-2xl font-poppins">
               {" "}
               Select Box to Delete Links
@@ -487,7 +487,7 @@ const links = () => {
             {receivedLinks.map((linkObj, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between w-full  mt-5"
+                className="flex items-center justify-between w-full mt-5"
               >
                 <div className="col-span-2 w-[80%]">
                   <Link href={linkObj.url} target="_black">
@@ -508,7 +508,7 @@ const links = () => {
                   </Link>
                 </div>
                 <div
-                  className="w-5 h-5 fill-none border-2 mx-auto border-black rounded-full flex items-center justify-center hover:scale-105 group transition-all duration-300 ease-linear"
+                  className="flex items-center justify-center w-5 h-5 mx-auto transition-all duration-300 ease-linear border-2 border-black rounded-full fill-none hover:scale-105 group"
                   onClick={() => handleRemoveLinks(index)}
                 >
                   <div
@@ -521,7 +521,7 @@ const links = () => {
                 </div>
               </div>
             ))}
-            <div className="w-full mx-auto  mt-10 flex justify-center">
+            <div className="flex justify-center w-full mx-auto mt-10">
               <button
                 className={`bg-red-500 px-2 py-2 cursor-pointer mx-auto border-2 text-white`}
                 onClick={handleDeleteSelectedLinks}
