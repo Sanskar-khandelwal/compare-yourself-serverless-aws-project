@@ -2,6 +2,7 @@ import React, { createContext, useState } from "react"
 import axios from "axios"
 import Pool from "../auth/UserPool"
 import { useRouter } from "next/router"
+import { toast } from "react-toastify"
 import {
   AuthenticationDetails,
   CognitoUser,
@@ -72,6 +73,73 @@ export const Account = (props) => {
       throw error
     }
   }
+
+  const changePassword = async (oldPassword, newPassword) => {
+    const user = getAuthenticatedUser()
+
+    if (!user) {
+      console.error("User not authenticated.")
+      return false
+    }
+
+    try {
+      await new Promise((resolve, reject) => {
+        user.getSession(async (err, session) => {
+          if (err) {
+            reject(err)
+            return
+          }
+
+          // Change password using the current session
+          user.changePassword(oldPassword, newPassword, (err, result) => {
+            if (err) {
+              console.error("Error changing password:", err)
+              reject(err)
+              return
+            }
+
+            console.log("Password changed successfully:", result)
+            resolve(result)
+          })
+        })
+      })
+
+      return true
+    } catch (error) {
+      console.error("Error changing password:", error)
+      return false
+    }
+  }
+
+  const resendConfirmationCode = async (username) => {
+    const userData = {
+      Username: username,
+      Pool,
+    }
+    const cognitoUser = new CognitoUser(userData)
+
+    try {
+      await new Promise((resolve, reject) => {
+        cognitoUser.resendConfirmationCode((err, result) => {
+          if (err) {
+            console.error("Error resending confirmation code:", err)
+
+            reject(err)
+            return
+          }
+
+          console.log("Confirmation code resent successfully:", result)
+          resolve(result)
+        })
+      })
+
+      return true
+    } catch (error) {
+      console.error("Error resending confirmation code:", error)
+      return false
+    }
+  }
+
   const authenticate = async (Username, Password) => {
     console.log(Username, Password)
     return await new Promise((resolve, reject) => {
@@ -102,6 +170,48 @@ export const Account = (props) => {
       })
     })
   }
+
+  const deleteUser = async () => {
+    const currentUser = getAuthenticatedUser()
+
+    if (!currentUser) {
+      console.error("User not authenticated.")
+      return false
+    }
+
+    try {
+      await new Promise((resolve, reject) => {
+        currentUser.getSession(async (err, session) => {
+          if (err) {
+            reject(err)
+            return
+          }
+
+          // Delete the user using the current session
+          currentUser.deleteUser((err, result) => {
+            if (err) {
+              console.error("Error deleting user:", err)
+              reject(err)
+              return
+            }
+
+            console.log("User deleted successfully:", result)
+            resolve(result)
+          })
+        })
+      })
+
+      // After successfully deleting the user, sign them out
+      currentUser.signOut()
+      router.push("/login")
+      setUser(null)
+      return true
+    } catch (error) {
+      console.error("Error deleting user:", error)
+      return false
+    }
+  }
+
   const logout = () => {
     const user = Pool.getCurrentUser()
     if (user) {
@@ -122,6 +232,9 @@ export const Account = (props) => {
         logout,
         getAuthenticatedUser,
         isAuthenticated,
+        changePassword,
+        deleteUser,
+        resendConfirmationCode,
       }}
     >
       {props.children}
