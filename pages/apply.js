@@ -12,6 +12,7 @@ import {
   CognitoUserPool,
   CognitoUserAttribute,
   CognitoUser,
+  resendConfirmationCode,
 } from "amazon-cognito-identity-js"
 import NavBar from "@/components/Navbar"
 
@@ -52,6 +53,7 @@ const Apply = () => {
       function (err, result) {
         if (err) {
           console.log(err)
+          setError(err.message)
           return
         }
         setVisible(true)
@@ -72,58 +74,53 @@ const Apply = () => {
       if (err) {
         alert(err)
         console.log(err)
+        setError(err.message)
         return
       } else {
         console.log(result)
         authenticate(email, password)
           .then((data) => {
             console.log("Logged In", data)
-            getSession()
-              .then((cognitoUserSession) => {
-                const payload = {
-                  handle: handle,
-                  name: name,
-                  email: email,
-                  links: [],
-                }
+            getSession().then((cognitoUserSession) => {
+              const payload = {
+                handle: handle,
+                name: name,
+                email: email,
+                links: [],
+              }
 
-                console.log("payload for the confirmation:", payload)
-                axios
-                  .post(
-                    "https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself",
-                    payload,
-                    {
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: cognitoUserSession
-                          .getIdToken()
-                          .getJwtToken(),
-                      },
-                    }
-                  )
-                  .then((res) => {
-                    const data = res.data
-                    if (data.status === "error") {
-                      return toast.error(data.error)
-                    }
-                    console.log("confirmation data axios", data)
-                    updateUser(payload)
+              console.log("payload for the confirmation:", payload)
+              axios
+                .post(
+                  "https://lm9vl60dre.execute-api.eu-north-1.amazonaws.com/dev/compare-yourself",
+                  payload,
+                  {
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: cognitoUserSession
+                        .getIdToken()
+                        .getJwtToken(),
+                    },
+                  }
+                )
+                .then((res) => {
+                  const data = res.data
+                  if (data.status === "error") {
+                    return toast.error(data.error)
+                  }
+                  console.log("confirmation data axios", data)
+                  updateUser(payload)
 
-                    router.push("/dashboard")
-                    localStorage.setItem("firstVist", "true")
-                    toast.success("Profile saved Successfully")
-                  })
-                  .catch((e) => {
-                    console.error(e)
-                    toast.error(e.message || "An error occurred")
-                  })
-              })
-              .catch((error) => {
-                // Handle any errors that occurred during the getSession method
-                console.error("Error:", error)
-              })
+                  router.push("/dashboard")
+                  localStorage.setItem("firstVist", "true")
+                  toast.success("Profile saved Successfully")
+                })
+            })
           })
-          .catch((err) => console.log("err", console.log(err)))
+          .catch((err) => {
+            setError(err.message)
+            console.log("err", console.log(err))
+          })
       }
     })
   }
@@ -177,15 +174,23 @@ const Apply = () => {
                   type="text"
                   value={handle}
                   onChange={(e) => setHandle(e.target.value)}
+                  required
                   placeholder="Create UserName"
                 />
               </span>
+              {error.toLowerCase() == "user already exists" && (
+                <p className="font-mono text-base text-red-700">
+                  {" "}
+                  {"Try a different username"}{" "}
+                </p>
+              )}
               <span className="flex flex-row items-center bg-white border rounded-md ">
                 <input
                   className="w-full px-3 py-2 bg-gray-100 rounded-md focus:outline-none"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  required
                   placeholder="Write your Name"
                 />
               </span>
@@ -202,6 +207,7 @@ const Apply = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
                 placeholder="Set a Password"
               />
 
@@ -211,15 +217,16 @@ const Apply = () => {
                 className="py-2 text-white bg-indigo-600 rounded-md cursor-pointer"
               />
             </form>
+
             <h4 className="mt-4 text-black text-">
               Already have an account ?
               <Link className="font-bold text-indigo-500" href="/login">
                 Login
               </Link>
               {error && (
-                <p className="font-mono text-red-700">
+                <p className="font-mono text-red-700 max-w-[350px]">
                   {" "}
-                  try different username or email{" "}
+                  {error}{" "}
                 </p>
               )}
             </h4>
@@ -237,10 +244,16 @@ const Apply = () => {
                   onClick={() =>
                     confirmUser(handle, code, email, password, name)
                   }
-                  className="block w-full py-2 mt-3 text-white bg-indigo-600 rounded-md cursor-pointer"
+                  className="block w-full py-2 mt-3 text-white bg-indigo-600 rounded-md cursor-pointer "
                 >
                   submit code
                 </button>
+                <span
+                  onClick={resendConfirmationCode}
+                  className="font-bold text-indigo-500 cursor-pointer"
+                >
+                  re-send code
+                </span>
               </div>
             )}
           </div>
