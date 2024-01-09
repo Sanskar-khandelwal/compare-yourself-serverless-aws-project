@@ -120,3 +120,55 @@ img{
 .button:hover:before {
   right: -100%;
 }
+
+/* Loading Button */
+.buttoncss {
+  position: relative;
+  padding: 8px 16px;
+  background: #009579;
+  border: none;
+  outline: none;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.buttoncss:active {
+  background: #007a63;
+}
+
+.buttoncss__text {
+  font: bold 20px "Quicksand", san-serif;
+  color: #ffffff;
+  transition: all 0.2s;
+}
+
+.buttoncss--loading .buttoncss__text {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.buttoncss--loading::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  border: 4px solid transparent;
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: buttoncss-loading-spinner 1s ease infinite;
+}
+
+@keyframes buttoncss-loading-spinner {
+  from {
+    transform: rotate(0turn);
+  }
+
+  to {
+    transform: rotate(1turn);
+  }
+}
